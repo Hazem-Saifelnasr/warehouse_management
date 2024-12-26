@@ -2,6 +2,7 @@
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from app.core.database import Base, engine
 from app.routers import base, users, items, stocks, locations, warehouses, projects, permissions, reports
 from src.app.core.config import get_settings
@@ -23,6 +24,9 @@ app.include_router(warehouses.router, prefix="/warehouses", tags=["Warehouses"])
 app.include_router(projects.router, prefix="/projects", tags=["Projects"])
 app.include_router(permissions.router, prefix="/permissions", tags=["Permissions"])
 app.include_router(reports.router, prefix="/reports", tags=["reports"])
+
+app.mount("/photos", StaticFiles(directory="src/assets/photos"), name="photos")
+app.mount("/web", StaticFiles(directory="src/assets/templates"), name="web")
 
 settings = get_settings()
 

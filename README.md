@@ -51,13 +51,14 @@ architecture.
 
 ### **3. Item Management**
 
-| **Endpoint**       | **Method** | **Description**              | **Access** |
-|--------------------|------------|------------------------------|------------|
-| `/items`           | `POST`     | Create a new item            | Admin      |
-| `/items/{item_id}` | `GET`      | Get details of an item by ID | Admin/User |
-| `/items/{item_id}` | `PUT`      | Update an item’s details     | Admin      |
-| `/items/{item_id}` | `DELETE`   | Delete an item               | Admin      |
-| `/items`           | `GET`      | List all items	              | Admin/User |
+| **Endpoint**                    | **Method** | **Description**              | **Access** |
+|---------------------------------|------------|------------------------------|------------|
+| `/items`                        | `POST`     | Create a new item            | Admin      |
+| `/items/{item_id}`              | `GET`      | Get details of an item by ID | Admin/User |
+| `/items/{item_id}`              | `PUT`      | Update an item’s details     | Admin      |
+| `/items/{item_id}`              | `DELETE`   | Delete an item               | Admin      |
+| `/items`                        | `GET`      | List all items	              | Admin/User |
+| `/items/{item_id}/upload-photo` | `POST`     | Upload photo to item	        | Admin/User |
 
 ---
 
@@ -569,6 +570,33 @@ architecture.
 **Endpoint:** `GET /items`
 
 **Example:** `GET /items`
+
+**Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "item_code": "ITEM001",
+    "description": "Sample Item",
+    "photo": "/images/item1.png",
+    "unit_of_measure": "m"
+  },
+  {
+    "id": 2,
+    "item_code": "ITEM002",
+    "description": "Sample Item",
+    "photo": "/images/item2.png",
+    "unit_of_measure": "kg"
+  }
+]
+```
+
+#### 3.6 Upload Photo to Item
+
+**Endpoint:** `POST /items/{item_id}/upload-photo`
+
+**Example:** `POST /items/1/upload-photo`
 
 **Response:**
 

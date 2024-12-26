@@ -1,6 +1,6 @@
 # src/app/routers/items.py
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from src.app.core.database import get_db
 from src.app.core.rbac import rbac_check
@@ -34,3 +34,8 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
 @router.get("/", response_model=list[ItemResponse])
 def list_item(db: Session = Depends(get_db)):
     return ItemService.list_items(db)
+
+
+@router.post("/{item_id}/upload-photo")
+def upload_item_photo(item_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    return ItemService.upload_item_photo(db, item_id, file)
