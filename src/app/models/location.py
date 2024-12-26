@@ -9,8 +9,7 @@ class Location(Base):
     __tablename__ = "locations"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True)
+    name = Column(String, unique=True, nullable=False)
 
-    items = relationship("Item", back_populates="location")
     warehouses = relationship("Warehouse", back_populates="location")
     projects = relationship("Project", back_populates="location")

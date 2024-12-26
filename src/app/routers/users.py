@@ -1,6 +1,6 @@
 # src/app/routers/users.py
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Form, Depends
 from sqlalchemy.orm import Session
 from src.app.core.database import get_db
 from src.app.services.user_service import UserService
@@ -19,7 +19,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login_user(username: str, password: str, db: Session = Depends(get_db)):
+def login_user(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     """
     Endpoint for user login. Returns a JWT token upon successful authentication.
     """
@@ -50,3 +50,11 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     Endpoint to delete a user by ID. Admin access is required.
     """
     return UserService.delete_user(db, user_id)
+
+
+@router.get("/", response_model=list[UserResponse])
+def get_users(db: Session = Depends(get_db)):
+    """
+    Endpoint to retrieve a list of users with pagination.
+    """
+    return UserService.list_users(db)

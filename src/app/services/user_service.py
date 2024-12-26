@@ -23,7 +23,7 @@ class UserService:
             username=user_data.username,
             email=user_data.email,
             hashed_password=hashed_password,
-            role="user"  # Default role
+            role=user_data.role or "user"  # Default role
         )
         db.add(new_user)
         db.commit()
@@ -51,7 +51,10 @@ class UserService:
             raise HTTPException(status_code=404, detail="User not found")
 
         for key, value in update_data.items():
-            setattr(user, key, value)
+            if key == "hashed_password":
+                raise HTTPException(status_code=400, detail="Cannot update hashed_password directly")
+            if value is not None:
+                setattr(user, key, value)
 
         db.commit()
         db.refresh(user)
@@ -66,3 +69,8 @@ class UserService:
         db.delete(user)
         db.commit()
         return {"detail": "User deleted successfully"}
+
+    @staticmethod
+    def list_users(db: Session):
+        users = db.query(User).all()
+        return users

@@ -9,8 +9,8 @@ class Warehouse(Base):
     __tablename__ = "warehouses"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True)
-    location_id = Column(Integer, ForeignKey("locations.id"))
+    name = Column(String, unique=True, nullable=False)
+    location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
 
     location = relationship("Location", back_populates="warehouses")
-    items = relationship("Item", secondary="warehouse_items", back_populates="warehouses")
+    stocks = relationship("Stock", back_populates="warehouse")

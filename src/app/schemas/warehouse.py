@@ -15,3 +15,7 @@ class WarehouseResponse(BaseModel):
 
     class Config:
         from_attributes = True  # Enable ORM compatibility
+
+
+class WarehouseUpdate(BaseModel):
+    name: str

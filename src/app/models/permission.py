@@ -1,7 +1,25 @@
 # src/app/model/permission.py
 
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, CheckConstraint, Index, Enum
+import enum
+from sqlalchemy.orm import relationship
 from src.app.core.database import Base
+
+
+class AccessType(str, enum.Enum):
+    READ = "read"
+    WRITE = "write"
+    DELETE = "delete"
+    MANAGE = "manage"
+    ASSIGN = "assign"
+    EXPORT = "export"
+    APPROVE = "approve"
+    REVOKE = "revoke"
+    ARCHIVE = "archive"
+    RESTORE = "restore"
+    SHARE = "share"
+    EXECUTE = "execute"
+    ALL = "*"
 
 
 class Permission(Base):
@@ -11,7 +29,15 @@ class Permission(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     entity = Column(String, nullable=False)  # e.g., "project", "warehouse", "location", or "*"
     entity_id = Column(String, nullable=False)  # e.g., entity ID or "*"
-    access_type = Column(String, nullable=False)  # e.g., "read", "write", "delete", "manage", or "*"
+    access_type = Column(Enum(AccessType), nullable=False)  # e.g., "read", "write", "delete", "manage", or "*"
+
+    user = relationship("User", back_populates="permissions")
+
+    # Constraints and Indexes
+    __table_args__ = (
+        CheckConstraint("entity IN ('project', 'warehouse', 'location', 'item', '*')", name="valid_entity"),
+        Index("ix_permission_user_entity", "user_id", "entity", "entity_id"),
+    )
 
     # Comprehensive List of Access Types:
     # Read-Only Permissions:

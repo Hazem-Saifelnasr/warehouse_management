@@ -1,17 +1,13 @@
 # src/app/schemas/item.py
 
 from pydantic import BaseModel
-from typing import List, Optional
 
 
 class ItemCreate(BaseModel):
     item_code: str
     description: str
     photo: str
-    total_qty: int
-    location_id: int
-    warehouse_ids: Optional[List[int]] = None
-    project_ids: Optional[List[int]] = None
+    unit_of_measure: str
 
 
 class ItemResponse(BaseModel):
@@ -19,8 +15,7 @@ class ItemResponse(BaseModel):
     item_code: str
     description: str
     photo: str
-    total_qty: int
-    location_id: int
+    unit_of_measure: str
 
     class Config:
         from_attributes = True  # Enable ORM compatibility

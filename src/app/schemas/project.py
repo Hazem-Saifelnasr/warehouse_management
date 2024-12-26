@@ -15,3 +15,7 @@ class ProjectResponse(BaseModel):
 
     class Config:
         from_attributes = True  # Enable ORM compatibility
+
+
+class ProjectUpdate(BaseModel):
+    project_name: str
