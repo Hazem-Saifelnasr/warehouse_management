@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Projects</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProjectModal">Add Project</button>
+</div>
+
+<!-- Search Text -->
+<div class="mb-3">
+    <input
+        type="text"
+        id="searchInput"
+        class="form-control"
+        placeholder="Search table..."
+        onkeyup="filterTable('projectTableBody')"
+    />
+</div>
+
+<!-- Project Table -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th onclick="sortTable('projectTableBody', 0)">Project ID<span class="sort-indicator"></span></th>
+            <th onclick="sortTable('projectTableBody', 1)">Project Name<span class="sort-indicator"></span></th>
+            <th onclick="sortTable('projectTableBody', 2)">Location<span class="sort-indicator"></span></th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="projectTableBody">
+        {% for project in projects %}
+        <tr>
+            <td>{{ project.id }}</td>
+            <td>{{ project.project_name }}</td>
+            <td>{{ project.location.name }}</td>
+            <td>
+                <button class="btn btn-warning btn-sm" onclick="editProject({{ project.id }})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteProject({{ project.id }})">Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Add Project Modal -->
+<div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addProjectForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addProjectModalLabel">Add Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="projectName" class="form-label">Project Name</label>
+                        <input type="text" class="form-control" id="projectName" name="project_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="locationId" class="form-label">Location</label>
+                        <select class="form-select" id="locationId" name="location_id" required>
+                            {% for location in locations %}
+                            <option value="{{ location.id }}">{{ location.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Projects Modal -->
+<div class="modal fade" id="editProjectModal" tabindex="-1" aria-labelledby="editProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editProjectForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProjectModalLabel">Edit Location</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editProjectId" name="id">
+                    <div class="mb-3">
+                        <label for="editProjectName" class="form-label">Project Name</label>
+                        <input type="text" class="form-control" id="editProjectName" name="project_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editLocationId" class="form-label">Location</label>
+                        <select class="form-select" id="editLocationId" name="location_id" required>
+                            {% for location in locations %}
+                            <option value="{{ location.id }}">{{ location.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

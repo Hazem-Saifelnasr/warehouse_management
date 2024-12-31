@@ -1,0 +1,78 @@
+/* Set Century Gothic as the default font for the entire application */
+body {
+    font-family: "Century Gothic", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Additional styles (if needed) to override specific elements */
+h1, h2, h3, h4, h5, h6, p, a, span, li, td, th, button, input, textarea {
+    font-family: "Century Gothic", Arial, sans-serif;
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding: 1rem;
+    text-align: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.navbar-brand img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+main {
+    padding: 2rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+}
+
+table th {
+    background: #f4f4f4;
+}
+
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    margin-top: 100px;
+}
+
+.sort-indicator {
+    margin-left: 8px;
+    font-size: 0.8em;
+}
+
+#searchInput {
+    max-width: 300px;
+    margin-bottom: 10px;
+}
+
+th {
+    cursor: pointer;
+    position: relative;
+}
+
+th:hover {
+    background-color: #f1f1f1;
+}
+
+th .sort-indicator {
+    color: #007bff;
+}

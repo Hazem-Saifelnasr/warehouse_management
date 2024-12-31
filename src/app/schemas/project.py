@@ -19,3 +19,4 @@ class ProjectResponse(BaseModel):
 
 class ProjectUpdate(BaseModel):
     project_name: str
+    location_id: int

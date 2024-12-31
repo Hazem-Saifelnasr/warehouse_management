@@ -20,6 +20,7 @@ class UserService:
         # Create the user
         hashed_password = get_password_hash(user_data.password)
         new_user = User(
+            employee_id=user_data.employee_id,
             username=user_data.username,
             email=user_data.email,
             hashed_password=hashed_password,

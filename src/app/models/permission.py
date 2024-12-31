@@ -10,6 +10,7 @@ class AccessType(str, enum.Enum):
     READ = "read"
     WRITE = "write"
     DELETE = "delete"
+    CREATE = "create"
     MANAGE = "manage"
     ASSIGN = "assign"
     EXPORT = "export"

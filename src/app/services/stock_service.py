@@ -135,7 +135,6 @@ class StockService:
 
         db.commit()
 
-        remaining_stock = stock_query.with_entities(func.sum(Stock.quantity)).scalar() or 0
         return updated_stocks
 
     @staticmethod

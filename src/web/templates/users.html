@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Users{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Users</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">Add User</button>
+</div>
+
+<!-- Search Text -->
+<div class="mb-3">
+    <input
+        type="text"
+        id="searchInput"
+        class="form-control"
+        placeholder="Search table..."
+        onkeyup="filterTable('userTableBody')"
+    />
+</div>
+
+<!-- Item Table -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th onclick="sortTable('userTableBody', 0)">Employee ID<span class="sort-indicator"></span></th>
+            <th onclick="sortTable('userTableBody', 1)">User Name<span class="sort-indicator"></span></th>
+            <th onclick="sortTable('userTableBody', 2)">Email<span class="sort-indicator"></span></th>
+            <th onclick="sortTable('userTableBody', 3)">Role<span class="sort-indicator"></span></th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="userTableBody">
+        {% for user in users %}
+        <tr>
+            <td>{{ user.employee_id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role }}</td>
+            <td>
+                <button class="btn btn-warning btn-sm" onclick="editUser({{ user.id }})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteUser({{ user.id }})">Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addUserForm" method="POST" action="/users/add">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Add User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="employee_id" class="form-label">Employee ID</label>
+                        <input type="number" class="form-control" id="employee_id" name="employee_id" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">User Name</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role</label>
+                        <select class="form-control" id="role" name="role" required>
+                            <option value="admin">Admin</option>
+                            <option value="user">User</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editUserForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editUserId" name="id">
+                    <div class="mb-3">
+                        <label for="editEmployeeId" class="form-label">Employee ID</label>
+                        <input type="number" class="form-control" id="editEmployeeId" name="employee_id" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="editUsername" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editEmail" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editRole" class="form-label">Role</label>
+                        <select class="form-control" id="editRole" name="role" required>
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

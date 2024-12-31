@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Permissions{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Permissions</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPermissionModal">Add Permission</button>
+</div>
+
+<!-- Search Text -->
+<div class="mb-3">
+    <input
+        type="text"
+        id="searchInput"
+        class="form-control"
+        placeholder="Search table..."
+        onkeyup="filterTable('permissionTableBody')"
+    />
+</div>
+
+<!-- Permission Table -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th onclick="sortTable('permissionTableBody', 0)">User Name<span class="sort-indicator"></span></th>
+            <th onclick="sortTable('permissionTableBody', 1)">Entity Type<span class="sort-indicator"></span></th>
+            <th onclick="sortTable('permissionTableBody', 2)">Entity Name<span class="sort-indicator"></span></th>
+            <th onclick="sortTable('permissionTableBody', 3)">Access Type<span class="sort-indicator"></span></th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="permissionTableBody">
+        {% for permission in permissions %}
+        <tr>
+            <td>{{ permission.user_name }}</td> <!-- User name -->
+            <td>{{ permission.entity }}</td>
+            <td>{{ permission.entity_name }}</td> <!-- Entity name -->
+            <td>{{ permission.access_type }}</td>
+            <td>
+                <button class="btn btn-danger btn-sm" onclick="deletePermission({{ permission.id }})">Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Add Permission Modal -->
+<div class="modal fade" id="addPermissionModal" tabindex="-1" aria-labelledby="addPermissionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addPermissionForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPermissionModalLabel">Add Permission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="addUserName" class="form-label">User Name</label>
+                        <select class="form-control" id="addUserName" name="user_name" required>
+                            {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="addEntity" class="form-label">Entity</label>
+                        <select class="form-control" id="addEntity" name="entity" required>
+                            <option value="*">All</option>
+                            <option value="item">Items</option>
+                            <option value="project">Projects</option>
+                            <option value="warehouse">Warehouses</option>
+                            <option value="location">Locations</option>
+                        </select>
+                        <label for="addEntityName" class="form-label">Entity Name</label>
+                        <select class="form-control" id="addEntityName" name="entity_name" required>
+                            <!-- Populated dynamically -->
+                        </select>
+                        <label for="addAccessType" class="form-label">Access Type</label>
+                        <select class="form-control" id="addAccessType" name="access_type" required>
+                            {% for access in access_types %}
+                                <option value="{{ access }}">{{ access }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

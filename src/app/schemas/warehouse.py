@@ -19,3 +19,4 @@ class WarehouseResponse(BaseModel):
 
 class WarehouseUpdate(BaseModel):
     name: str
+    location_id: int

@@ -2,8 +2,8 @@
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-
 from src.app.core.database import Base
+from src.app.models.permission import Permission
 
 
 class User(Base):

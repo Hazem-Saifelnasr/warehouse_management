@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="h3 text-center">Warehouse Management Dashboard</h1>
+    <div class="row mt-5">
+        <!-- Card 1: Total Items -->
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Total Items</h5>
+                    <h2 id="totalItems" class="display-5">0</h2>
+                </div>
+            </div>
+        </div>
+        <!-- Card 2: Total Warehouses -->
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Total Warehouses</h5>
+                    <h2 id="totalWarehouses" class="display-5">0</h2>
+                </div>
+            </div>
+        </div>
+        <!-- Card 3: Total Projects -->
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Total Projects</h5>
+                    <h2 id="totalProjects" class="display-5">0</h2>
+                </div>
+            </div>
+        </div>
+        <!-- Card 4: Total Stock -->
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Total Stock</h5>
+                    <h2 id="totalStock" class="display-5">0</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <canvas id="stockDistributionChart" height="100"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}

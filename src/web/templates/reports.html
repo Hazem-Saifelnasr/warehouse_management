@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Reports</h1>
+    <button class="btn btn-primary" onclick="generateReport()">Generate Reports</button>
+</div>
+
+<!-- Reports Table -->
+<h2>Saved Reports</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Report Name</th>
+            <th>Date Generated</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="reportsTable">
+        <!-- Dynamically filled with JavaScript -->
+    </tbody>
+</table>
+
+<div class="mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>View Dynamic Reports</h2>
+        <!-- View and Generate Report Buttons -->
+        <div class="d-flex gap-2"> <!-- Grouped Buttons with spacing -->
+            <button class="btn btn-primary" id="viewReport">View Report</button>
+            <button class="btn btn-primary" id="exportReportButton">Export Report</button>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="reportType" class="form-label">Select Report Type</label>
+        <select id="reportType" class="form-control">
+            <option value="">-- Select a Report Type --</option>
+            <option value="entity_report">Entity Report</option>
+            <option value="stock_by_entity_type_report">Stock by Entity Type Report</option>
+            <option value="stock_by_entity_type_and_id_report">Stock by Entity and ID Report</option>
+            <option value="stock_by_item_report">Stock by Item Report</option>
+        </select>
+    </div>
+
+    <!-- Dynamic Entity Type -->
+    <div id="entityTypeSelection" class="mb-3" style="display: none;">
+        <label for="entityType" class="form-label">Select Entity Type</label>
+        <select id="entityType" class="form-control">
+            <!-- Options dynamically populated by JS -->
+        </select>
+    </div>
+
+    <div id="entityIdSelection" class="mb-3" style="display: none;">
+        <label for="entityId" class="form-label">Select Entity</label>
+        <select id="entityId" class="form-control">
+            <!-- Dynamically populated -->
+        </select>
+    </div>
+
+    <div id="itemIdSelection" class="mb-3" style="display: none;">
+        <label for="itemId" class="form-label">Select Item</label>
+        <select id="itemId" class="form-control">
+            <!-- Dynamically populated -->
+        </select>
+    </div>
+
+    <!-- Dynamic Table -->
+    <table class="table table-striped mt-4" id="dynamicReportTable" style="display: none;">
+        <thead id="dynamicReportTableHeader">
+            <!-- Dynamically filled with JavaScript -->
+        </thead>
+        <tbody id="dynamicReportTableBody">
+            <!-- Dynamically filled with JavaScript -->
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -12,8 +12,24 @@ class Settings(BaseSettings):
     APP_HOST: str
     APP_PORT: int
 
+    ENV: str
     # === DataBase ===
+    # ------------- postgreSQL -------------
     DATABASE_URL: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_SERVER: str
+    POSTGRES_PORT: int
+    POSTGRES_DB: str
+    # POSTGRES_SYNC_PREFIX: str
+    # POSTGRES_ASYNC_PREFIX: str
+    # POSTGRES_URI: str
+    # POSTGRES_URL: str
+
+    # ------------- pgadmin -------------
+    PGADMIN_DEFAULT_EMAIL: str
+    PGADMIN_DEFAULT_PASSWORD: str
+    PGADMIN_LISTEN_PORT: int
 
     # === Secrets for Authentication ===
     # Secrets for JWT signing

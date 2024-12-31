@@ -1,8 +1,10 @@
 # src/app/services/item_service.py
+import os
 
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, UploadFile
 from src.app.models.item import Item
+from src.app.models.stock import Stock
 from src.app.schemas.item import ItemCreate
 
 
@@ -46,9 +48,24 @@ class ItemService:
 
     @staticmethod
     def delete_item(db: Session, item_id: int):
+        # Check if the item is referenced in stocks
+        stock_count = db.query(Stock).filter(Stock.item_id == item_id).count()
+        if stock_count > 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot delete item. It is associated with existing stock."
+            )
+
         item = db.query(Item).filter(Item.id == item_id).first()
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
+
+        # Delete the photo file if it exists
+        if item.photo and os.path.exists(os.path.join("src/assets", item.photo)):
+            try:
+                os.remove(os.path.join("src/assets", item.photo))
+            except Exception as e:
+                print(f"Error deleting file {item.photo}: {e}")
 
         db.delete(item)
         db.commit()
@@ -71,18 +88,30 @@ class ItemService:
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
 
+        # Delete the photo file if it exists
+        if item.photo and os.path.exists(os.path.join("src/assets", item.photo)):
+            try:
+                os.remove(os.path.join("src/assets", item.photo))
+            except Exception as e:
+                print(f"Error deleting file {item.photo}: {e}")
+
         # Validate file type
         if not file.content_type.startswith("image/"):
             raise HTTPException(status_code=400, detail="Invalid file type. Must be an image.")
 
+        # Ensure the directory exists
+        directory = "src/assets/photos"
+        os.makedirs(directory, exist_ok=True)
+
         # Save the file
         file_name = f"{item_id}_{file.filename}"
-        file_path = f"src/assets/photos/{file_name}"
+        file_path = os.path.join(directory, file_name)
+
         with open(file_path, "wb") as f:
             f.write(file.file.read())
 
         # Update item with photo path
-        item.photo = file_path
+        item.photo = os.path.join("photos", file_name)
         db.commit()
         db.refresh(item)
 

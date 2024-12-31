@@ -31,7 +31,7 @@ architecture.
 | `/users/{user_id}` | `GET`      | Get details of a user by ID          | Admin      |
 | `/users/{user_id}` | `PUT`      | Update user details                  | Admin      |
 | `/users/{user_id}` | `DELETE`   | Delete a user by ID                  | Admin      |
-| `/users`           | `GET`      | List of all users                    | Admin      |
+| `/users/list`      | `GET`      | List of all users                    | Admin      |
 
 ---
 
@@ -39,7 +39,7 @@ architecture.
 
 | **Endpoint**                            | **Method** | **Description**                                      | **Access** |
 |-----------------------------------------|------------|------------------------------------------------------|------------|
-| `/permissions`                          | `POST`     | Assign a permission to a user                        | Admin      |
+| `/permissions/add`                      | `POST`     | Assign a permission to a user                        | Admin      |
 | `/permissions/{permission_id}`          | `DELETE`   | Revoke a permission by its ID                        | Admin      |
 | `/permissions/user/{user_id}`           | `GET`      | Get all permissions assigned to a specific user      | Admin      |
 | `/permissions/warehouse/{warehouse_id}` | `GET`      | Get all permissions assigned to a specific warehouse | Admin      |
@@ -53,11 +53,11 @@ architecture.
 
 | **Endpoint**                    | **Method** | **Description**              | **Access** |
 |---------------------------------|------------|------------------------------|------------|
-| `/items`                        | `POST`     | Create a new item            | Admin      |
+| `/items/add`                    | `POST`     | Create a new item            | Admin      |
 | `/items/{item_id}`              | `GET`      | Get details of an item by ID | Admin/User |
 | `/items/{item_id}`              | `PUT`      | Update an item’s details     | Admin      |
 | `/items/{item_id}`              | `DELETE`   | Delete an item               | Admin      |
-| `/items`                        | `GET`      | List all items	              | Admin/User |
+| `/items/list`                   | `GET`      | List all items	              | Admin/User |
 | `/items/{item_id}/upload-photo` | `POST`     | Upload photo to item	        | Admin/User |
 
 ---
@@ -66,11 +66,11 @@ architecture.
 
 | **Endpoint**                         | **Method** | **Description**                          | **Access** |
 |--------------------------------------|------------|------------------------------------------|------------|
-| `/warehouses`                        | `POST`     | Create a new warehouse                   | Admin      |
+| `/warehouses/add`                    | `POST`     | Create a new warehouse                   | Admin      |
 | `/warehouses/{warehouse_id}`         | `GET`      | Get details of a warehouse by ID         | Admin/User |
 | `/warehouses/{warehouse_id}`         | `PUT`      | Update warehouse details                 | Admin      |
 | `/warehouses/{warehouse_id}`         | `DELETE`   | Delete a warehouse                       | Admin      |
-| `/warehouses`                        | `GET`      | List all warehouses                      | Admin/User |
+| `/warehouses/list`                   | `GET`      | List all warehouses                      | Admin/User |
 | `/warehouses/location/{location_id}` | `GET`      | List all warehouses in specific location | Admin/User |
 
 ---
@@ -79,11 +79,11 @@ architecture.
 
 | **Endpoint**                        | **Method** | **Description**                 | **Access** |
 |-------------------------------------|------------|---------------------------------|------------|
-| `/locations`                        | `POST`     | Create a new location           | Admin      |
+| `/locations/add`                    | `POST`     | Create a new location           | Admin      |
 | `/locations/{location_id}`          | `GET`      | Get details of a location by ID | Admin/User |
 | `/locations/{location_id}`          | `PUT`      | Update location details         | Admin      |
 | `/locations/{location_id}`          | `DELETE`   | Delete a location               | Admin      |
-| `/locations`                        | `GET`      | List all locations              | Admin/User |
+| `/locations/list`                   | `GET`      | List all locations              | Admin/User |
 | `/locations/{location_id}/entities` | `GET`      | List all entities by locations  | Admin/User |
 
 ---
@@ -92,11 +92,11 @@ architecture.
 
 | **Endpoint**                       | **Method** | **Description**                        | **Access** |
 |------------------------------------|------------|----------------------------------------|------------|
-| `/projects`                        | `POST`     | Create a new project                   | Admin      |
+| `/projects/add`                    | `POST`     | Create a new project                   | Admin      |
 | `/projects/{project_id}`           | `GET`      | Get details of a project by ID         | Admin/User |
 | `/projects/{project_id}`           | `PUT`      | Update project details                 | Admin      |
 | `/projects/{project_id}`           | `DELETE`   | Delete a project                       | Admin      |
-| `/projects`                        | `GET`      | List all projects                      | Admin/User |
+| `/projects/list`                   | `GET`      | List all projects                      | Admin/User |
 | `/projects/location/{location_id}` | `GET`      | List all projects in specific location | Admin/User |
 
 ---
@@ -141,7 +141,7 @@ architecture.
 
 #### 1.1 Create User
 
-**Endpoint:** `POST /users/create`
+**Endpoint:** `POST /users/add`
 
 **Request:**
 
@@ -165,23 +165,7 @@ architecture.
 }
 ```
 
-#### 1.2 Login
-
-**Endpoint:** `POST /users/login`
-
-**Example:** `POST /users/login`
-**Parameter:** `x-www-form-urlencoded`: `username` & `password`
-
-**Response:**
-
-```json
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR...",
-  "token_type": "bearer"
-}
-```
-
-#### 1.3 Get User
+#### 1.2 Get User
 
 **Endpoint:** `GET /users/{user_id}`
 
@@ -198,7 +182,7 @@ architecture.
 }
 ```
 
-#### 1.4 Update User
+#### 1.3 Update User
 
 **Endpoint:** `PUT /users/{user_id}`
 
@@ -224,7 +208,7 @@ architecture.
 }
 ```
 
-#### 1.5 Delete User
+#### 1.4 Delete User
 
 **Endpoint:** `DELETE /users/{user_id}`
 
@@ -238,9 +222,9 @@ architecture.
 }
 ```
 
-#### 1.6 List Users
+#### 1.5 List Users
 
-**Endpoint:** `GET /users/`
+**Endpoint:** `GET /users/list`
 
 **Response:**
 
@@ -273,7 +257,7 @@ architecture.
 
 #### 2.1 Assign Permission
 
-**Endpoint:** `POST /permissions/`
+**Endpoint:** `POST /permissions/add`
 
 **Request:**
 
@@ -476,12 +460,9 @@ architecture.
 
 #### 3.1 Create Item
 
-**Endpoint:** `POST /items/`
+**Endpoint:** `POST /items/add`
 
 **Request:**
-
-- warehouse_ids: Optional list[int]
-- project_ids: Optional list[int]
 
 ```json
 {
@@ -567,9 +548,9 @@ architecture.
 
 #### 3.5 List All Items
 
-**Endpoint:** `GET /items`
+**Endpoint:** `GET /items/list`
 
-**Example:** `GET /items`
+**Example:** `GET /items/list`
 
 **Response:**
 
@@ -625,7 +606,7 @@ architecture.
 
 #### 4.1 Create Warehouse
 
-**Endpoint:** `POST /warehouses/`
+**Endpoint:** `POST /warehouses/add`
 
 **Request:**
 
@@ -702,7 +683,7 @@ architecture.
 
 #### 4.5 List Warehouses
 
-**Endpoint:** `GET /warehouses`
+**Endpoint:** `GET /warehouses/list`
 
 **Response:**
 
@@ -750,7 +731,7 @@ architecture.
 
 #### 4.1 Create Location
 
-**Endpoint:** `POST /locations/`
+**Endpoint:** `POST /locations/add`
 
 **Request:**
 
@@ -823,7 +804,7 @@ architecture.
 
 #### 4.5 List Locations
 
-**Endpoint:** `GET /locations/`
+**Endpoint:** `GET /locations/list`
 
 **Response:**
 
@@ -878,7 +859,7 @@ architecture.
 
 #### 6.1 Create Project
 
-**Endpoint:** `POST /projects/`
+**Endpoint:** `POST /projects/add`
 
 **Request:**
 
@@ -956,7 +937,7 @@ architecture.
 
 #### 6.5 List Projects
 
-**Endpoint:** `GET /projects/`
+**Endpoint:** `GET /projects/list`
 
 **Response:**
 
@@ -1468,7 +1449,110 @@ Authorization: Bearer <token>
     - Scan and manage items using barcodes.
 2. Dashboard:
     - Build an admin dashboard for visualizing stock levels.
-3. Cloud Integration:
-    - Deploy to AWS or Azure for scalability.
-4. Enhanced Reports:
+3. Enhanced Reports:
     - Generate monthly or yearly summaries.
+
+## File structure
+```plaintext
+src/
+├── app/
+│   ├── __init__.py
+│   ├── core/                  # Core utilities and configurations
+│   │   ├── __init__.py
+│   │   ├── config.py          # Configuration settings (reads from .env)
+│   │   ├── security.py        # Security utilities (JWT, hashing)
+│   │   ├── rbac.py            # Role-Based Access Control
+│   │   ├── database.py        # Database connection setup
+│   ├── models/                # ORM models (e.g., SQLAlchemy, Pydantic schemas)
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   ├── item.py
+│   │   ├── stock.py
+│   │   ├── permission.py
+│   │   ├── project.py
+│   │   ├── location.py
+│   │   ├── warehouse.py
+│   ├── routers/               # API route handlers
+│   │   ├── __init__.py
+│   │   ├── base.py
+│   │   ├── locations.py
+│   │   ├── login.py
+│   │   ├── users.py
+│   │   ├── items.py
+│   │   ├── stocks.py
+│   │   ├── permissions.py
+│   │   ├── reports.py
+│   │   ├── projects.py
+│   │   ├── warehouses.py
+│   ├── schemas/
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   ├── item.py
+│   │   ├── stock.py
+│   │   ├── permission.py
+│   │   ├── project.py
+│   │   ├── location.py
+│   │   ├── warehouse.py
+│   ├── services/              # Business logic layer
+│   │   ├── __init__.py
+│   │   ├── user_service.py
+│   │   ├── item_service.py
+│   │   ├── stock_service.py
+│   │   ├── auth_service.py
+│   │   ├── report_service.py
+│   │   ├── permission_service.py
+│   ├── utils/                 # Utility functions
+│       ├── __init__.py
+│       ├── helpers.py
+│       ├── error_handler.py
+│       ├── logger.py
+├── assets/                    # Static assets like photo, reports
+│   ├── logs/   
+│   ├── photos/                
+│   ├── reports/               
+├── web/                       # Templates for the frontend (HTML files)
+│   ├── templates/             # HTML templates
+│   │   ├── base.html](src%2
+│   │   ├── dashboard.html
+│   │   ├── error.html
+│   │   ├── items.html
+│   │   ├── locations.html
+│   │   ├── login.html
+│   │   ├── permissions.html
+│   │   ├── projects.html
+│   │   ├── reports.html
+│   │   ├── stocks.html
+│   │   ├── users.html
+│   │   ├── warehouses.html
+│   ├── static/                # Static files served by the web app
+│   │   ├── css/               # CSS files
+│   │   │   ├── styles.css         
+│   │   ├── img/               # image files
+│   │   │   ├── logo.png        
+│   │   │   ├── logo_text.png         
+│   │   │   ├── favicon.ico         
+│   │   ├── js/                # JavaScript files
+│   │   │   ├──dashboard.js
+│   │   │   ├──items.js
+│   │   │   ├──locations.js
+│   │   │   ├──permissions.js
+│   │   │   ├──projects.js
+│   │   │   ├──reports.js
+│   │   │   ├──stocks.js
+│   │   │   ├──users.js
+│   │   │   ├──utils.js
+│   │   │   ├──warehouses.js
+│   │   │   ├── styles.css         
+│   │   │   ├── scripts.js         
+├── main.py                    # Main FastAPI application entry point
+├── .env                       # Environment variables (sensitive config)
+├── requirements.txt           # Python dependencies
+alembic/                       # Alembic for database migrations
+   ├── README
+   ├── script.py.mako
+   ├── env.py
+   └── versions/
+README.ME
+docker-compose.yml
+Dockerfile                     # Dockerfile for containerization
+```

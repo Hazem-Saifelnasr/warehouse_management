@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Stocks{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Stocks</h1>
+    <div class="d-flex gap-2"> <!-- Grouped Buttons with spacing -->
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStockModal">Add Stock</button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deductStockModal">Deduct Stock</button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#transferStockModal">Transfer Stock</button>
+    </div>
+</div>
+
+<!-- Search Text -->
+<div class="mb-3">
+    <input
+        type="text"
+        id="searchInput"
+        class="form-control"
+        placeholder="Search table..."
+        onkeyup="filterTable('stockTableBody')"
+    />
+</div>
+
+<!-- Item Table -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th onclick="sortTable('stockTableBody', 0)">Item Code<span class="sort-indicator"></span></th>
+            <th onclick="sortTable('stockTableBody', 1)">Location<span class="sort-indicator"></span></th>
+            <th onclick="sortTable('stockTableBody', 2)">Quantity<span class="sort-indicator"></span></th>
+            <th onclick="sortTable('stockTableBody', 3)">Unit<span class="sort-indicator"></span></th>
+            <th onclick="sortTable('stockTableBody', 4)">Last Updated<span class="sort-indicator"></span></th>
+        </tr>
+    </thead>
+    <tbody id="stockTableBody">
+        {% for stock in stocks %}
+        <tr>
+            <td>{{ stock.item.item_code }}</td>
+            <td>{% if not stock.project %}
+                {{ stock.warehouse.name }}, {{ stock.warehouse.location.name }}
+                {% elif not stock.warehouse %}
+                {{ stock.project.project_name }}, {{ stock.project.location.name }}
+                {% else %}
+                Unknown
+                {% endif %}
+            </td>
+            <td>{{ stock.quantity }}</td>
+            <td>{{ stock.item.unit_of_measure }}</td>
+            <td>
+                {% if stock.last_updated %}
+                {{ stock.last_updated.strftime('%d-%m-%Y') }}
+                <br>
+                {{ stock.last_updated.strftime('%I:%M %p') }}
+                {% else %}
+                N/A
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Add Stock Modal -->
+<div class="modal fade" id="addStockModal" tabindex="-1" aria-labelledby="addStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addStockForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addStockModalLabel">Add Stock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="addItemCode" class="form-label">Item Code</label>
+                        <select class="form-control" id="addItemCode" name="item_code" required>
+                            {% for item in items %}
+                                <option value="{{ item.id }}">{{ item.item_code }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addEntityType" class="form-label">Entity Type</label>
+                        <select class="form-control" id="addEntityType" name="entity_type" onchange="updateEntityList('add')" required>
+                            <option value="warehouse">Warehouse</option>
+                            <option value="project">Project</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addEntityName" id="addEntityNameLabel" class="form-label">Entity Name</label>
+                        <select class="form-control" id="addEntityName" name="entity_name" required>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addQuantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="addQuantity" name="quantity" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Deduct Stock Modal -->
+<div class="modal fade" id="deductStockModal" tabindex="-1" aria-labelledby="deductStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="deductStockForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deductStockModalLabel">Deduct Stock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="deductItemCode" class="form-label">Item Code</label>
+                        <select class="form-control" id="deductItemCode" name="item_code" required>
+                            {% for item in items %}
+                                <option value="{{ item.id }}">{{ item.item_code }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deductEntityType" class="form-label">Entity Type</label>
+                        <select class="form-control" id="deductEntityType" name="entity_type" onchange="updateEntityList('deduct')" required>
+                            <option value="warehouse">Warehouse</option>
+                            <option value="project">Project</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deductEntityName" id="deductEntityNameLabel" class="form-label">Entity Name</label>
+                        <select class="form-control" id="deductEntityName" name="entity_name" required>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deductQuantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="deductQuantity" name="quantity" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Transfer Stock Modal -->
+<div class="modal fade" id="transferStockModal" tabindex="-1" aria-labelledby="transferStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="transferStockForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="transferStockModalLabel">Transfer Stock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="transferItemCode" class="form-label">Item Code</label>
+                        <select class="form-control" id="transferItemCode" name="item_code" required>
+                            {% for item in items %}
+                                <option value="{{ item.id }}">{{ item.item_code }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transferFromEntityType" class="form-label">Entity Type (From)</label>
+                        <select class="form-control" id="transferFromEntityType" name="from_entity_type" onchange="updateEntityList('transferFrom')" required>
+                            <option value="warehouse">Warehouse</option>
+                            <option value="project">Project</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transferFromEntityName" id="transferFromEntityNameLabel" class="form-label">Entity Name</label>
+                        <select class="form-control" id="transferFromEntityName" name="from_entity_name" required>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transferToEntityType" class="form-label">Entity Type (To)</label>
+                        <select class="form-control" id="transferToEntityType" name="to_entity_type" onchange="updateEntityList('transferTo')" required>
+                            <option value="warehouse">Warehouse</option>
+                            <option value="project">Project</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transferToEntityName" id="transferToEntityNameLabel" class="form-label">Entity Name</label>
+                        <select class="form-control" id="transferToEntityName" name="to_entity_name" required>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transferQuantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="transferQuantity" name="quantity" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
