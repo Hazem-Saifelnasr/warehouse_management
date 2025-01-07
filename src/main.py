@@ -14,10 +14,10 @@ from src.app.routers import login
 app = FastAPI()
 settings = get_settings()
 
-# Initialize Database Tables
-Base.metadata.create_all(bind=engine)
-# Remove Base.metadata.create_all for production
-# Instead, ensure Alembic migrations are applied during deployment
+# # Initialize Database Tables
+# Base.metadata.create_all(bind=engine)
+# # Remove Base.metadata.create_all for production
+# # Instead, ensure Alembic migrations are applied during deployment
 
 # # Include Routers
 # router = APIRouter(prefix="/v1")
