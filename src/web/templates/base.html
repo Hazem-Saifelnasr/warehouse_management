@@ -4,25 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Warehouse Management{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.1.0/js/all.js" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/static/js/utils.js"></script>
+    <script src="/static/js/restore.js"></script>
     <script src="/static/js/dashboard.js"></script>
     <script src="/static/js/permissions.js"></script>
     <script src="/static/js/users.js"></script>
+    <script src="/static/js/departments.js"></script>
     <script src="/static/js/items.js"></script>
     <script src="/static/js/stocks.js"></script>
     <script src="/static/js/warehouses.js"></script>
     <script src="/static/js/projects.js"></script>
     <script src="/static/js/locations.js"></script>
     <script src="/static/js/reports.js"></script>
+    <script src="/static/js/pending_approvals.js"></script>
 </head>
 <body>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    </div>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
+        <div class="container px-4 px-lg-5">
             <a class="navbar-brand" href="/">
                 <img src="/static/img/logo.png" alt="Logo" class="me-2">
                 Warehouse Management
@@ -33,15 +37,17 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="/">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/permissions">Permissions</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/users">Users</a></li>
                     <li class="nav-item"><a class="nav-link" href="/items">Items</a></li>
                     <li class="nav-item"><a class="nav-link" href="/stocks">Stocks</a></li>
                     <li class="nav-item"><a class="nav-link" href="/projects">Projects</a></li>
                     <li class="nav-item"><a class="nav-link" href="/warehouses">Warehouses</a></li>
                     <li class="nav-item"><a class="nav-link" href="/locations">Locations</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/reports">Reports</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/reports">Documents</a></li>
+                    {% if user_role == "superuser" or user_role == "admin" %}
+                    <li class="nav-item"><a class="nav-link" href="/pending_approvals">Admin Dashboard</a></li>
+                    {% endif %}
                 </ul>
+                <div class="dropdown-divider" style="border-color:gray;"></div>
                 <ul class="navbar-nav">
                     {% if request.state.user %}
                     <li class="nav-item">
@@ -59,5 +65,6 @@
     <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>

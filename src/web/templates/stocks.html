@@ -1,112 +1,189 @@
-{% extends "base.html" %}
+{% extends "base_service.html" %}
 
-{% block title %}Stocks{% endblock %}
+{% set service_name = "stocks" %}
+{% set page_name = "stock" %}
+{% set page_name_cap = "Stock" %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3">Stocks</h1>
-    <div class="d-flex gap-2"> <!-- Grouped Buttons with spacing -->
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStockModal">Add Stock</button>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deductStockModal">Deduct Stock</button>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#transferStockModal">Transfer Stock</button>
-    </div>
+{% block title_sub %}Stocks{% endblock %}
+
+{% block document_dashboard %}{% endblock %}
+
+{% block admin_dashboard %}{% endblock %}
+
+{% block page_heading %}Stocks{% endblock %}
+
+{% block add_button %}
+<div class="d-flex gap-2"> <!-- Grouped Buttons with spacing -->
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStockModal">Add Stock</button>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deductStockModal">Deduct Stock</button>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#transferStockModal">Transfer Stock</button>
 </div>
-
-<!-- Search Text -->
-<div class="mb-3">
-    <input
-        type="text"
-        id="searchInput"
-        class="form-control"
-        placeholder="Search table..."
-        onkeyup="filterTable('stockTableBody')"
-    />
-</div>
+{% endblock %}
 
 <!-- Item Table -->
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th onclick="sortTable('stockTableBody', 0)">Item Code<span class="sort-indicator"></span></th>
-            <th onclick="sortTable('stockTableBody', 1)">Location<span class="sort-indicator"></span></th>
-            <th onclick="sortTable('stockTableBody', 2)">Quantity<span class="sort-indicator"></span></th>
-            <th onclick="sortTable('stockTableBody', 3)">Unit<span class="sort-indicator"></span></th>
-            <th onclick="sortTable('stockTableBody', 4)">Last Updated<span class="sort-indicator"></span></th>
-        </tr>
-    </thead>
-    <tbody id="stockTableBody">
-        {% for stock in stocks %}
-        <tr>
-            <td>{{ stock.item.item_code }}</td>
-            <td>{% if not stock.project %}
-                {{ stock.warehouse.name }}, {{ stock.warehouse.location.name }}
-                {% elif not stock.warehouse %}
-                {{ stock.project.project_name }}, {{ stock.project.location.name }}
-                {% else %}
-                Unknown
-                {% endif %}
-            </td>
-            <td>{{ stock.quantity }}</td>
-            <td>{{ stock.item.unit_of_measure }}</td>
-            <td>
-                {% if stock.last_updated %}
-                {{ stock.last_updated.strftime('%d-%m-%Y') }}
-                <br>
-                {{ stock.last_updated.strftime('%I:%M %p') }}
-                {% else %}
-                N/A
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{% block table_header %}
+<th class="text-start align-top" onclick="sortTable('stockTableBody', 0)">Item Code<span class="sort-indicator"></span>
+</th>
+<th class="text-start align-top" onclick="sortTable('stockTableBody', 1)">Location<span class="sort-indicator"></span>
+</th>
+<th class="text-start align-top" onclick="sortTable('stockTableBody', 2)">Quantity<span class="sort-indicator"></span>
+</th>
+<th class="text-start align-top" onclick="sortTable('stockTableBody', 3)">Unit<span class="sort-indicator"></span></th>
+<th class="text-start align-top" onclick="sortTable('stockTableBody', 4)">Updated AT<span class="sort-indicator"></span>
+</th>
+<th class="text-start align-top" onclick="sortTable('stockTableBody', 5)">Cost Price<span class="sort-indicator"></span>
+</th>
+<th class="text-start align-top" onclick="sortTable('stockTableBody', 6)">Selling Price<span
+        class="sort-indicator"></span></th>
+<th class="text-start align-top" onclick="sortTable('stockTableBody', 7)">BOQ Code<span class="sort-indicator"></span>
+</th>
+{% endblock %}
+
+{% block table_body %}
+{% for stock in stocks %}
+<tr>
+    <td class="text-start align-top">{{ stock.item.item_code }}</td>
+    <td class="text-start align-top">{% if not stock.project %}
+        {{ stock.warehouse.name }}, {{ stock.warehouse.location.name }}
+        {% elif not stock.warehouse %}
+        {{ stock.project.name }}, {{ stock.project.location.name }}
+        {% else %}
+        Unknown
+        {% endif %}
+    </td>
+    <td class="text-start align-top">{{ stock.quantity }}</td>
+    <td class="text-start align-top">{{ stock.item.unit_of_measure }}</td>
+    <td class="text-start align-top">
+        {% if stock.updated_at %}
+        {{ stock.updated_at.strftime('%d-%m-%Y') }}
+        <br>
+        {{ stock.updated_at.strftime('%I:%M %p') }}
+        {% else %}
+        N/A
+        {% endif %}
+    </td>
+    <td class="text-start align-top">{{ "%.2f" | format(stock.cost_price) }}</td>
+    <td class="text-start align-top">{{ "%.2f" | format(stock.selling_price) }}</td>
+    <td class="text-start align-top">{{ stock.boq_code }}</td>
+</tr>
+{% endfor %}
+{% endblock %}
 
 <!-- Add Stock Modal -->
-<div class="modal fade" id="addStockModal" tabindex="-1" aria-labelledby="addStockModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="addStockForm" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addStockModalLabel">Add Stock</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="addItemCode" class="form-label">Item Code</label>
-                        <select class="form-control" id="addItemCode" name="item_code" required>
-                            {% for item in items %}
-                                <option value="{{ item.id }}">{{ item.item_code }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="addEntityType" class="form-label">Entity Type</label>
-                        <select class="form-control" id="addEntityType" name="entity_type" onchange="updateEntityList('add')" required>
-                            <option value="warehouse">Warehouse</option>
-                            <option value="project">Project</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="addEntityName" id="addEntityNameLabel" class="form-label">Entity Name</label>
-                        <select class="form-control" id="addEntityName" name="entity_name" required>
-                            <!-- Populated dynamically -->
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="addQuantity" class="form-label">Quantity</label>
-                        <input type="number" class="form-control" id="addQuantity" name="quantity" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
+{% block add_modal_body %}
+<div class="row mb-3 g-3">
+    <div class="col-md-6">
+        <label for="addItemCode" class="form-label">Item Code</label>
+        <select class="form-control" id="addItemCode" name="item_code" required>
+            {% for item in items %}
+            <option value="{{ item.id }}">{{ item.item_code }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label for="addBoqCode" class="form-label">BOQ Code</label>
+        <input type="text" class="form-control" id="addBoqCode" name="boq_code">
+    </div>
+</div>
+<div class="row mb-3 g-3">
+    <div class="col-md-6">
+        <label for="addEntityType" class="form-label">Entity Type</label>
+        <select class="form-control" id="addEntityType" name="entity_type" onchange="updateEntityList('add')" required>
+            <option value="warehouse">Warehouse</option>
+            <option value="project">Project</option>
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label for="addEntityName" id="addEntityNameLabel" class="form-label">Entity Name</label>
+        <select class="form-control" id="addEntityName" name="entity_name" required>
+            <!-- Populated dynamically -->
+        </select>
+    </div>
+</div>
+<div class="row mb-3 g-3">
+    <div class="col-md-4">
+        <label for="addQuantity" class="form-label">Quantity</label>
+        <div class="input-group">
+            <input type="number" class="form-control" id="addQuantity" name="quantity" step="0.01" min="0" required>
+            <span class="input-group-text" id="addQuantityUnit">{{ unit_of_measure }}</span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label for="addCostPrice" class="form-label">Cost Price</label>
+        <div class="input-group">
+            <input type="number" class="form-control" id="addCostPrice" name="cost_price" step="0.01" min="0" required>
+            <span class="input-group-text">SAR</span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label for="addSellingPrice" class="form-label">Selling Price</label>
+        <div class="input-group">
+            <input type="number" class="form-control" id="addSellingPrice" name="selling_price" step="0.01" min="0" required>
+            <span class="input-group-text">SAR</span>
         </div>
     </div>
 </div>
 
+<div class="row mb-3 g-3">
+    <div class="col-md-4">
+        <label for="addSupplierCode" class="form-label">Supplier Code</label>
+        <input type="text" class="form-control" id="addSupplierCode" name="supplier_code">
+    </div>
+    <div class="col-md-4">
+        <label for="addSupplierName" class="form-label">Supplier Name</label>
+        <input type="text" class="form-control" id="addSupplierName" name="supplier_name">
+    </div>
+    <div class="col-md-4">
+        <label for="addSupplierContact" class="form-label">Supplier Contact</label>
+        <input type="text" class="form-control" id="addSupplierContact" name="supplier_contact">
+    </div>
+</div>
+
+<div class="row mb-3 g-3">
+    <div class="col-md-12">
+        <label for="addCountryOfOrigin" class="form-label">Country of Origin</label>
+        <input type="text" class="form-control" id="addCountryOfOrigin" name="country_of_origin">
+    </div>
+</div>
+
+<div class="row mb-3 g-3">
+    <div class="col-md-6">
+        <label for="addCondition" class="form-label">Condition</label>
+        <select class="form-control" id="addCondition" name="stock_condition">
+            <option value="new">New</option>
+            <option value="used">Used</option>
+            <option value="damaged">Damaged</option>
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label for="addColor" class="form-label">Color</label>
+        <input type="text" class="form-control" id="addColor" name="color">
+    </div>
+    <div class="col-md-6">
+        <label for="addSize" class="form-label">Size</label>
+        <input type="text" class="form-control" id="addSize" name="size">
+    </div>
+    <div class="col-md-6">
+        <label for="addMaterial" class="form-label">Material</label>
+        <input type="text" class="form-control" id="addMaterial" name="material">
+    </div>
+</div>
+<div class="row mb-3 g-3">
+    <div class="col-md-6">
+        <label for="addBarcode" class="form-label">Bar Code</label>
+        <input type="text" class="form-control" id="addBarcode" name="barcode">
+    </div>
+</div>
+<div class="row mb-3 g-3">
+    <div class="col-md-12">
+        <label for="addRemarks" class="form-label">Remarks</label>
+        <textarea class="form-control" id="addRemarks" name="remarks" rows="3"></textarea>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block edit_modal %}
 <!-- Deduct Stock Modal -->
 <div class="modal fade" id="deductStockModal" tabindex="-1" aria-labelledby="deductStockModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -117,30 +194,55 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="deductItemCode" class="form-label">Item Code</label>
-                        <select class="form-control" id="deductItemCode" name="item_code" required>
-                            {% for item in items %}
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-6">
+                            <label for="deductItemCode" class="form-label">Item Code</label>
+                            <select class="form-control" id="deductItemCode" name="item_code" required>
+                                {% for item in items %}
                                 <option value="{{ item.id }}">{{ item.item_code }}</option>
-                            {% endfor %}
-                        </select>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="deductBoqCode" class="form-label">BOQ Code</label>
+                            <input type="text" class="form-control" id="deductBoqCode" name="boq_code">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="deductEntityType" class="form-label">Entity Type</label>
-                        <select class="form-control" id="deductEntityType" name="entity_type" onchange="updateEntityList('deduct')" required>
-                            <option value="warehouse">Warehouse</option>
-                            <option value="project">Project</option>
-                        </select>
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-6">
+                            <label for="deductEntityType" class="form-label">Entity Type</label>
+                            <select class="form-control" id="deductEntityType" name="entity_type"
+                                    onchange="updateEntityList('deduct')" required>
+                                <option value="warehouse">Warehouse</option>
+                                <option value="project">Project</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="deductEntityName" id="deductEntityNameLabel" class="form-label">Entity
+                                Name</label>
+                            <select class="form-control" id="deductEntityName" name="entity_name" required>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="deductEntityName" id="deductEntityNameLabel" class="form-label">Entity Name</label>
-                        <select class="form-control" id="deductEntityName" name="entity_name" required>
-                            <!-- Populated dynamically -->
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="deductQuantity" class="form-label">Quantity</label>
-                        <input type="number" class="form-control" id="deductQuantity" name="quantity" required>
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-6">
+                            <label for="deductQuantity" class="form-label">Quantity</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="deductQuantity" name="quantity"
+                                       step="0.01"
+                                       min="0" required>
+                                <span class="input-group-text" id="deductQuantityUnit">{{ unit_of_measure }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="deductSellingPrice" class="form-label">Selling Price</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="deductSellingPrice" name="selling_price"
+                                       step="0.01" min="0" required>
+                                <span class="input-group-text">SAR</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -153,7 +255,8 @@
 </div>
 
 <!-- Transfer Stock Modal -->
-<div class="modal fade" id="transferStockModal" tabindex="-1" aria-labelledby="transferStockModalLabel" aria-hidden="true">
+<div class="modal fade" id="transferStockModal" tabindex="-1" aria-labelledby="transferStockModalLabel"
+     aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="transferStockForm" method="POST">
@@ -162,52 +265,71 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="transferItemCode" class="form-label">Item Code</label>
-                        <select class="form-control" id="transferItemCode" name="item_code" required>
-                            {% for item in items %}
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-6">
+                            <label for="transferItemCode" class="form-label">Item Code</label>
+                            <select class="form-control" id="transferItemCode" name="item_code" required>
+                                {% for item in items %}
                                 <option value="{{ item.id }}">{{ item.item_code }}</option>
-                            {% endfor %}
-                        </select>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="transferBoqCode" class="form-label">BOQ Code</label>
+                            <input type="text" class="form-control" id="transferBoqCode" name="boq_code">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="transferFromEntityType" class="form-label">Entity Type (From)</label>
-                        <select class="form-control" id="transferFromEntityType" name="from_entity_type" onchange="updateEntityList('transferFrom')" required>
-                            <option value="warehouse">Warehouse</option>
-                            <option value="project">Project</option>
-                        </select>
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-6">
+                            <label for="transferFromEntityType" class="form-label">Entity Type (From)</label>
+                            <select class="form-control" id="transferFromEntityType" name="from_entity_type"
+                                    onchange="updateEntityList('transferFrom')" required>
+                                <option value="warehouse">Warehouse</option>
+                                <option value="project">Project</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="transferFromEntityName" id="transferFromEntityNameLabel" class="form-label">Entity
+                                Name</label>
+                            <select class="form-control" id="transferFromEntityName" name="from_entity_name" required>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="transferFromEntityName" id="transferFromEntityNameLabel" class="form-label">Entity Name</label>
-                        <select class="form-control" id="transferFromEntityName" name="from_entity_name" required>
-                            <!-- Populated dynamically -->
-                        </select>
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-6">
+                            <label for="transferToEntityType" class="form-label">Entity Type (To)</label>
+                            <select class="form-control" id="transferToEntityType" name="to_entity_type"
+                                    onchange="updateEntityList('transferTo')" required>
+                                <option value="warehouse">Warehouse</option>
+                                <option value="project">Project</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="transferToEntityName" id="transferToEntityNameLabel" class="form-label">Entity
+                                Name</label>
+                            <select class="form-control" id="transferToEntityName" name="to_entity_name" required>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="transferToEntityType" class="form-label">Entity Type (To)</label>
-                        <select class="form-control" id="transferToEntityType" name="to_entity_type" onchange="updateEntityList('transferTo')" required>
-                            <option value="warehouse">Warehouse</option>
-                            <option value="project">Project</option>
-                        </select>
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-6">
+                            <label for="transferQuantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="transferQuantity" name="quantity" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="transferSellingPrice" class="form-label">Selling Price</label>
+                            <input type="number" class="form-control" id="transferSellingPrice" name="selling_price" required>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="transferToEntityName" id="transferToEntityNameLabel" class="form-label">Entity Name</label>
-                        <select class="form-control" id="transferToEntityName" name="to_entity_name" required>
-                            <!-- Populated dynamically -->
-                        </select>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
                     </div>
-                    <div class="mb-3">
-                        <label for="transferQuantity" class="form-label">Quantity</label>
-                        <input type="number" class="form-control" id="transferQuantity" name="quantity" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
 {% endblock %}

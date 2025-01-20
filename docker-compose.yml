@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    image: warehouse_management:0.0.1  # Custom image name with version tag
+    image: warehouse_management:0.0.2  # Custom image name with version tag
     container_name: warehouse_management
     env_file: ./src/.env
     restart: always
@@ -15,7 +13,7 @@ services:
       - db
     volumes:
       - /volume1/docker/warehouse_management/assets:/warehouse_management/src/assets  # Mount the source code for live development
-#      - D:/warehouse_management/:/warehouse_management/  # Mount the source code for live development
+#      - D:/warehouse_management/assets/:/warehouse_management/src/assets  # Mount the source code for live development
 
 #    command: >
 #      sh -c "PYTHONPATH=/app gunicorn src.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000"
@@ -45,16 +43,16 @@ services:
       - db
 
   alembic:
-    image: warehouse_management:0.0.1
+    image: warehouse_management:0.0.2
     container_name: alembic
     env_file: ./src/.env
     depends_on:
       - db
 #    volumes:
-#      - D:/warehouse_management/:/warehouse_management/
-#      - /volume1/docker/warehouse_management/app:/src
+#      - /volume1/docker/warehouse_management/alembic:/warehouse_management/alembic
+#      - D:/warehouse_management/alembic:/warehouse_management/alembic
     command: >
-      sh -c "alembic revision --autogenerate -m 'Initial migration' &&
+      sh -c "alembic revision --autogenerate -m 'Upgrade all tables to v.0.0.2' &&
       alembic upgrade head"
 
   create_admin:
@@ -67,8 +65,6 @@ services:
       - app
       - alembic
     command: python -m src.scripts.create_first_admin
-#    volumes:
-#      - ./src:/src
 
 #  volumes:
 #    postgres_data:

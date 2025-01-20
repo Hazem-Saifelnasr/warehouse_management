@@ -2,12 +2,15 @@
 
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
+from src.app.core.database import get_db
 from src.app.models.item import Item
 from src.app.models.location import Location
 from src.app.models.project import Project
 from src.app.models.stock import Stock
 from src.app.models.warehouse import Warehouse
+from src.app.schemas.stock import StockCreate, StockDeduct, StockTransfer
+from src.app.services.history_log_service import HistoryLogService
 
 
 class StockService:
@@ -27,98 +30,80 @@ class StockService:
             raise HTTPException(status_code=404, detail="Location not found")
 
     @staticmethod
-    def add_stock(db: Session, item_id: int, project_id: int = None, warehouse_id: int = None,
-                  quantity: float = 0, ):
-        """
-        Add stock for an item in a specific project or warehouse.
-
-        Args:
-            db (Session): The database session.
-            item_id (int): The ID of the item.
-            project_id (int): The project ID (optional).
-            warehouse_id (int): The warehouse ID (optional).
-            quantity (float): The quantity to add.
-
-        Returns:
-            Stock: The updated or new stock entry.
-
-        Raises:
-            HTTPException: If both or neither of project_id and warehouse_id are provided, or if quantity is invalid.
-        """
-        StockService.validate_references(db, item_id, warehouse_id, project_id)
+    def add_stock(stock_data: StockCreate, requester_id: int, db: Session = Depends(get_db)):
+        StockService.validate_references(db, stock_data.item_id, stock_data.warehouse_id, stock_data.project_id)
 
         # Validate input
-        if project_id and warehouse_id:
+        if stock_data.project_id and stock_data.warehouse_id:
             raise HTTPException(status_code=400, detail="Specify either project_id or warehouse_id, not both.")
-        if not quantity or quantity <= 0:
+        if not stock_data.quantity or stock_data.quantity <= 0:
             raise HTTPException(status_code=400, detail="Quantity must be greater than zero.")
-        if not (project_id or warehouse_id):
+        if not (stock_data.project_id or stock_data.warehouse_id):
             raise HTTPException(status_code=400, detail="Specify either project_id or warehouse_id.")
 
         # Check if stock already exists
         stock = db.query(Stock).filter(
-            Stock.item_id == item_id,
-            Stock.project_id == project_id,
-            Stock.warehouse_id == warehouse_id,
+            Stock.item_id == stock_data.item_id,
+            Stock.project_id == stock_data.project_id,
+            Stock.warehouse_id == stock_data.warehouse_id,
         ).first()
 
-        if stock:
-            stock.quantity += quantity
-        else:
-            stock = Stock(
-                item_id=item_id,
-                project_id=project_id,
-                warehouse_id=warehouse_id,
-                quantity=quantity,
-            )
-            db.add(stock)
+        metadata = {
+            "item_id": stock_data.item_id,
+            "previous_qty": stock.quantity if stock else 0,
+            "added_qty": stock_data.quantity,
+            "project_id":  getattr(stock_data, "project_id", "N/A"),
+            "warehouse_id": getattr(stock_data, "warehouse_id", "N/A")
+        }
 
-        db.commit()
-        return stock
+        if stock:
+            # Update cost_price using weighted average
+            stock.cost_price = ((stock.quantity * stock.cost_price) +
+                                (stock_data.quantity * stock_data.cost_price)) / (stock.quantity + stock_data.quantity)
+
+            # Update selling price directly if it differs
+            if stock_data.selling_price is not None:
+                stock.selling_price = stock_data.selling_price
+
+            # Update stock quantity
+            stock.quantity += stock_data.quantity
+
+            HistoryLogService.log_action(db, "stock", stock.item_id, "add", requester_id, metadata)
+            return stock
+        else:
+            new_stock = Stock(**dict(stock_data))
+            db.add(new_stock)
+
+            db.commit()
+            HistoryLogService.log_action(db, "stock", new_stock.item_id, "add", requester_id, metadata)
+            return new_stock
 
     @staticmethod
-    def deduct_stock(db: Session, item_id: int, project_id: int = None,
-                     warehouse_id: int = None, quantity: float = 0,):
-        """
-        Deduct stock quantity for a specific item in a project or warehouse.
-
-        Args:
-            db (Session): The database session.
-            item_id (int): The ID of the item.
-            project_id (int): The project ID (optional).
-            warehouse_id (int): The warehouse ID (optional).
-            quantity (float): The quantity to deduct.
-
-        Returns:
-            Stock: The updated stock entry.
-
-        Raises:
-            HTTPException: If stock is insufficient or entry not found.
-        """
-        StockService.validate_references(db, item_id, warehouse_id, project_id)
+    def deduct_stock(stock_data: StockDeduct, requester_id: int, db: Session = Depends(get_db)):
+        StockService.validate_references(db, stock_data.item_id, stock_data.warehouse_id, stock_data.project_id)
         # Validate input
-        if project_id and warehouse_id:
+        if stock_data.project_id and stock_data.warehouse_id:
             raise HTTPException(status_code=400, detail="Specify either project_id or warehouse_id, not both.")
-        if not (project_id or warehouse_id):
+        if not (stock_data.project_id or stock_data.warehouse_id):
             raise HTTPException(status_code=400, detail="Specify either project_id or warehouse_id.")
-        if quantity <= 0:
+        if stock_data.quantity <= 0:
             raise HTTPException(status_code=400, detail="Quantity must be greater than zero.")
 
         # Aggregate stock across all entries for the given project or warehouse
         stock_query = db.query(Stock).filter(
-            Stock.item_id == item_id,
-            Stock.project_id == project_id,
-            Stock.warehouse_id == warehouse_id,
+            Stock.item_id == stock_data.item_id,
+            Stock.project_id == stock_data.project_id,
+            Stock.warehouse_id == stock_data.warehouse_id,
         )
 
         total_stock = stock_query.with_entities(func.sum(Stock.quantity)).scalar() or 0
 
-        if total_stock < quantity:
+        if total_stock < stock_data.quantity:
             raise HTTPException(status_code=400, detail="Insufficient stock.")
 
         # Deduct stock from entries in order
-        stocks = stock_query.order_by(Stock.last_updated).all()
-        remaining_quantity = quantity
+        stocks = stock_query.order_by(Stock.updated_at).all()
+        remaining_quantity = stock_data.quantity
         updated_stocks = []
 
         for stock in stocks:
@@ -135,51 +120,94 @@ class StockService:
 
         db.commit()
 
+        metadata = {
+            "item_id": stock_data.item_id,
+            "previous_qty": stock_query.first().quantity,
+            "deducted_qty": stock_data.quantity,
+            "project_id": getattr(stock_data, "project_id", "N/A"),
+            "warehouse_id": getattr(stock_data, "warehouse_id", "N/A")
+        }
+
+        HistoryLogService.log_action(db, "stock", stock_data.item_id, "deduct", requester_id, metadata)
         return updated_stocks
 
     @staticmethod
-    def transfer_stock(db: Session, item_id: int,
-                       from_project_id: int = None, to_project_id: int = None,
-                       from_warehouse_id: int = None, to_warehouse_id: int = None,
-                       quantity: float = 0):
-        """
-        Transfers stock of an item from a source to a destination.
+    def transfer_stock(stock_data: StockTransfer, requester_id: int, db: Session = Depends(get_db)):
+        StockService.validate_references(db, stock_data.item_id, stock_data.from_warehouse_id, stock_data.from_project_id)
+        StockService.validate_references(db, stock_data.item_id, stock_data.to_warehouse_id, stock_data.to_project_id)
 
-        Args:
-            db (Session): Database session.
-            item_id (int): ID of the item to transfer.
-            from_project_id (int): Source project ID.
-            to_project_id (int): Destination project ID.
-            from_warehouse_id (int): Source warehouse ID.
-            to_warehouse_id (int): Destination warehouse ID.
-            quantity (float): Quantity to transfer.
-        """
-        StockService.validate_references(db, item_id, from_warehouse_id, from_project_id)
-        StockService.validate_references(db, item_id, to_warehouse_id, to_project_id)
-
-        if not quantity or quantity <= 0:
+        if not stock_data.quantity or stock_data.quantity <= 0:
             raise HTTPException(status_code=400, detail="Quantity must be greater than zero.")
 
         # Validate source
-        if not (from_project_id or from_warehouse_id):
+        if not (stock_data.from_project_id or stock_data.from_warehouse_id):
             raise HTTPException(status_code=400, detail="A source (location, project, or warehouse) must be specified.")
 
         # Validate destination
-        if not (to_project_id or to_warehouse_id):
+        if not (stock_data.to_project_id or stock_data.to_warehouse_id):
             raise HTTPException(status_code=400,
                                 detail="A destination (location, project, or warehouse) must be specified.")
 
+        # Check if stock already exists
+        stock = db.query(Stock).filter(
+            Stock.item_id == stock_data.item_id,
+            Stock.project_id == stock_data.from_project_id,
+            Stock.warehouse_id == stock_data.from_warehouse_id,
+        ).first()
+
+        if not stock:
+            raise HTTPException(status_code=404, detail="Stock not found")
+
+        if stock_data.from_project_id:
+            stock_dict = stock_data.model_dump()
+            stock_dict["project_id"] = stock_data.from_project_id
+            stock_dict["warehouse_id"] = None
+            del stock_dict["from_project_id"]  # Remove the field dynamically
+            del stock_dict["from_warehouse_id"]  # Remove the field dynamically
+            stock_data_deduct = StockDeduct(**stock_dict)
+        else:
+            stock_dict = stock_data.model_dump()
+            stock_dict["warehouse_id"] = stock_data.from_warehouse_id
+            stock_dict["project_id"] = None
+            del stock_dict["from_project_id"]  # Remove the field dynamically
+            del stock_dict["from_warehouse_id"]  # Remove the field dynamically
+            stock_data_deduct = StockDeduct(**stock_dict)
+
+        if stock_data.to_project_id:
+            stock_dict = stock_data.model_dump()
+            stock_dict["project_id"] = stock_data.to_project_id
+            stock_dict["warehouse_id"] = None
+            stock_dict["cost_price"] = stock.cost_price
+            del stock_dict["from_project_id"]  # Remove the field dynamically
+            del stock_dict["from_warehouse_id"]  # Remove the field dynamically
+            stock_data_add = StockCreate(**stock_dict)
+        else:
+            stock_dict = stock_data.model_dump()
+            stock_dict["warehouse_id"] = stock_data.to_warehouse_id
+            stock_dict["project_id"] = None
+            stock_dict["cost_price"] = stock.cost_price
+            del stock_dict["from_project_id"]  # Remove the field dynamically
+            del stock_dict["from_warehouse_id"]  # Remove the field dynamically
+            stock_data_add = StockCreate(**stock_dict)
+
         # Remove stock from the source
-        StockService.deduct_stock(db, item_id=item_id,
-                                  project_id=from_project_id,
-                                  warehouse_id=from_warehouse_id,
-                                  quantity=quantity)
+        StockService.deduct_stock(stock_data_deduct, requester_id, db)
 
         # Add stock to the destination
-        return StockService.add_stock(db, item_id=item_id,
-                                      project_id=to_project_id,
-                                      warehouse_id=to_warehouse_id,
-                                      quantity=quantity)
+        added_stock = StockService.add_stock(stock_data_add, requester_id, db)
+
+        metadata = {
+            "item_id": stock.item_id,
+            "previous_qty": stock.quantity,
+            "added_qty": stock_data.quantity,
+            "from_project_id": getattr(stock_data_deduct, "project_id", "N/A"),
+            "from_warehouse_id": getattr(stock_data_deduct, "warehouse_id", "N/A"),
+            "to_project_id": getattr(stock_data_add, "project_id", "N/A"),
+            "to_warehouse_id": getattr(stock_data_add, "warehouse_id", "N/A"),
+        }
+
+        HistoryLogService.log_action(db, "stock", stock_data.item_id, "transfer", requester_id, metadata)
+        return added_stock
 
     @staticmethod
     def get_stock_by_location_or_project_or_warehouse(
@@ -307,7 +335,7 @@ class StockService:
         project_data = (
             db.query(
                 Location.name.label("location"),
-                Project.project_name.label("project"),
+                Project.name.label("project"),
                 Stock.quantity.label("quantity")
             )
             .join(Project, Stock.project_id == Project.id)

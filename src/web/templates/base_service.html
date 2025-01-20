@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}{% block title_sub %}{% endblock %}{% endblock %}
+
+{% block content %}
+
+{% block document_dashboard %}
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link {% if page_name == 'report' %}active{% endif %}" href="/reports">Reports</a></li>
+  <li class="nav-item"><a class="nav-link {% if page_name == 'invoice' %}active{% endif %}" href="/invoices">Invoices</a></li>
+  <li class="nav-item"><a class="nav-link {% if page_name == 'stock_permission' %}active{% endif %}" href="/stock_permissions">Stock Permissions</a></li>
+</ul>
+{% endblock %}
+
+{% block admin_dashboard %}
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><a class="nav-link {% if page_name == 'user' %}active{% endif %}" href="/users">Users</a></li>
+    <li class="nav-item"><a class="nav-link {% if page_name == 'department' %}active{% endif %}" href="/departments">Departments</a></li>
+    <li class="nav-item"><a class="nav-link {% if page_name == 'permission' %}active{% endif %}" href="/permissions">Permissions</a></li>
+    <li class="nav-item"><a class="nav-link {% if page_name == 'pending_approval' %}active{% endif %}" href="/pending_approvals">Pending Approvals</a></li>
+    <li class="nav-item"><a class="nav-link {% if page_name == 'history_log' %}active{% endif %}" href="/history_logs">History Logs</a></li>
+    <li class="nav-item"><a class="nav-link {% if page_name == 'restore' %}active{% endif %}" href="/restore">Restore</a></li>
+</ul>
+{% endblock %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">{% block page_heading %}{% endblock %}</h1>
+    {% block add_button %}
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add{{ page_name_cap }}Modal"><i class="fa-solid fa-plus"></i> Add {{ page_name_cap }}</button>
+    {% endblock %}
+</div>
+
+{% block search_text %}
+<!-- Search Text -->
+<div class="mb-3">
+    <input
+        type="text"
+        id="searchInput"
+        class="form-control"
+        placeholder="Search table..."
+        onkeyup="filterTable('{{ page_name }}TableBody')"
+    />
+</div>
+{% endblock %}
+
+{% block item_per_page %}
+<!-- Items per page dropdown -->
+<div class="d-flex align-items-center mb-3">
+    <label for="page-size" class="me-2">Items per page:</label>
+    <select id="page-size" class="form-select form-select-sm w-auto" onchange="changePageSize(this.value)">
+        <option value="5" {% if size == 5 %}selected{% endif %}>5</option>
+        <option value="10" {% if size == 10 %}selected{% endif %}>10</option>
+        <option value="20" {% if size == 20 %}selected{% endif %}>20</option>
+        <option value="50" {% if size == 50 %}selected{% endif %}>50</option>
+    </select>
+</div>
+{% endblock %}
+
+{% block restore %}{% endblock %}
+
+{% block table %}
+<!-- Table -->
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                {% block table_header %}{% endblock %}
+            </tr>
+        </thead>
+        <tbody  id="{{ page_name }}TableBody">
+            {% block table_body %}{% endblock %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block add_modal %}
+<!-- Add Modal -->
+<div class="modal fade" id="add{{ page_name_cap }}Modal" tabindex="-1" aria-labelledby="add{{ page_name_cap }}ModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="add{{ page_name_cap }}Form" method="POST" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="add{{ page_name_cap }}ModalLabel">Add {{ page_name_cap }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                {% block add_modal_body %}{% endblock %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block edit_modal %}
+<!-- Edit Modal -->
+<div class="modal fade" id="edit{{ page_name_cap }}Modal" tabindex="-1" aria-labelledby="edit{{ page_name_cap }}ModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="edit{{ page_name_cap }}Form" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="edit{{ page_name_cap }}ModalLabel">Edit {{ page_name_cap }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit{{ page_name_cap }}Id" name="id">
+                    {% block edit_modal_body %}{% endblock %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block pagination %}
+<!-- Pagination Controls -->
+<nav aria-label="...">
+  <ul class="pagination">
+    <!-- Previous Button -->
+    <li class="page-item {% if page <= 1 %}disabled{% endif %}" >
+      <a onclick="changePage({{ page - 1 }} , {{ size }})" class="page-link" >Previous</a>
+    </li>
+
+    <!-- Page Number Links -->
+    {% for p in range(1, total_pages + 1) %}
+        <li class="page-item {% if p == page %}active{% endif %}">
+            <a class="page-link" onclick="changePage({{ p }} , {{ size }})">
+            {{ p }}
+            </a>
+        </li>
+    {% endfor %}
+
+    <!-- Next Button -->
+    <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+      <a onclick="changePage({{ page + 1 }} , {{ size }})" class="page-link">Next</a>
+    </li>
+  </ul>
+</nav>
+{% endblock %}
+
+{% include 'footer.html' %}
+{% endblock %}

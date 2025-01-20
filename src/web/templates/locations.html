@@ -1,93 +1,48 @@
-{% extends "base.html" %}
+{% extends "base_service.html" %}
 
-{% block title %}Locations{% endblock %}
+{% set service_name = "locations" %}
+{% set page_name = "location" %}
+{% set page_name_cap = "Location" %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3">Locations</h1>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLocationModal">Add Location</button>
-</div>
+{% block title_sub %}Locations{% endblock %}
 
-<!-- Search Text -->
-<div class="mb-3">
-    <input
-        type="text"
-        id="searchInput"
-        class="form-control"
-        placeholder="Search table..."
-        onkeyup="filterTable('locationTableBody')"
-    />
-</div>
+{% block document_dashboard %}{% endblock %}
+
+{% block admin_dashboard %}{% endblock %}
+
+{% block page_heading %}Locations{% endblock %}
 
 <!-- Location Table -->
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th onclick="sortTable('locationTableBody', 0)">Location ID<span class="sort-indicator"></span></th>
-            <th onclick="sortTable('locationTableBody', 1)">Name<span class="sort-indicator"></span></th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody id="locationTableBody">
+{% block table_header %}
+            <th class="text-start align-top" onclick="sortTable('locationTableBody', 0)">Name<span class="sort-indicator"></span></th>
+            <th class="text-start align-top" >Actions</th>
+{% endblock %}
+
+{% block table_body %}
         {% for location in locations %}
         <tr>
-            <td>{{ location.id }}</td>
-            <td>{{ location.name }}</td>
+            <td class="text-start align-top" >{{ location.name }}</td>
             <td>
-                <button class="btn btn-warning btn-sm" onclick="editLocation({{ location.id }})">Edit</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteLocation({{ location.id }})">Delete</button>
+                <button class="btn btn-warning btn-sm" onclick="editLocation({{ location.id }})"><i class="fa-solid fa-pen-to-square"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteLocation({{ location.id }})"><i class="fa-solid fa-trash"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="archiveLocation({{ location.id }})"><i class="fa-solid fa-box-archive"></i></button>
             </td>
         </tr>
         {% endfor %}
-    </tbody>
-</table>
+{% endblock %}
 
 <!-- Add Location Modal -->
-<div class="modal fade" id="addLocationModal" tabindex="-1" aria-labelledby="addLocationModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="addLocationForm" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addLocationModalLabel">Add Location</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="locationName" class="form-label">Location Name</label>
-                        <input type="text" class="form-control" id="locationName" name="name" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
+{% block add_modal_body %}
+        <div class="mb-3">
+            <label for="addName" class="form-label">Location Name</label>
+            <input type="text" class="form-control" id="addName" name="name" required>
         </div>
-    </div>
-</div>
+{% endblock %}
 
 <!-- Edit Location Modal -->
-<div class="modal fade" id="editLocationModal" tabindex="-1" aria-labelledby="editLocationModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="editLocationForm">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editLocationModalLabel">Edit Location</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="editLocationId" name="id">
-                    <div class="mb-3">
-                        <label for="editLocationName" class="form-label">Location Name</label>
-                        <input type="text" class="form-control" id="editLocationName" name="name" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
-                </div>
-            </form>
-        </div>
+{% block edit_modal_body %}
+    <div class="mb-3">
+        <label for="editName" class="form-label">Location Name</label>
+        <input type="text" class="form-control" id="editName" name="name" required>
     </div>
-</div>
 {% endblock %}

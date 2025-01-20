@@ -1,0 +1,48 @@
+{% extends "base_service.html" %}
+
+{% set service_name = "pending_approvals" %}
+{% set page_name = "pending_approval" %}
+{% set page_name_cap = "Pending Approval" %}
+
+{% block title_sub %}Pending Approvals{% endblock %}
+
+{% block document_dashboard %}{% endblock %}
+
+{% block add_button %}{% endblock %}
+
+{% block page_heading %}Pending Approvals{% endblock %}
+
+<!-- Pending Approval Table -->
+{% block table_header %}
+    <th class="text-start align-top" onclick="sortTable('pendingApprovalTableBody', 0)">ID<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('pendingApprovalTableBody', 1)">Entity Name<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('pendingApprovalTableBody', 2)">Entity ID<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('pendingApprovalTableBody', 3)">Action<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('pendingApprovalTableBody', 4)">Requested By<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('pendingApprovalTableBody', 5)">Request Date<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('pendingApprovalTableBody', 6)">New Value<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('pendingApprovalTableBody', 7)">Approval Status<span class="sort-indicator"></span></th>
+    <th class="text-start align-top">Actions</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for pending_approval in pending_approvals %}
+    <tr>
+        <td class="text-start align-top">{{ pending_approval.id }}</td>
+        <td class="text-start align-top">{{ pending_approval.entity }}</td>
+        <td class="text-start align-top">{{ pending_approval.entity_id }}</td>
+        <td class="text-start align-top">{{ pending_approval.action }}</td>
+        <td class="text-start align-top">{{ pending_approval.requested_by }}</td>
+        <td class="text-start align-top">{{ pending_approval.requested_at }}</td>
+        <td class="text-start align-top">{{ pending_approval.new_value }}</td>
+        <td class="text-start align-top">{{ pending_approval.approval_status }}</td>
+        <td class="text-start align-top">
+            <button class="btn btn-success btn-sm" onclick="handlePendingApproval({{ pending_approval.id }}, 'approve')"><i class="fa-solid fa-check"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="handlePendingApproval({{ pending_approval.id }}, 'reject')"><i class="fa-solid fa-xmark"></i></button>
+        </td>
+    </tr>
+    {% endfor %}
+{% endblock %}
+
+{% block add_modal_body %}{% endblock %}
+{% block edit_modal_body %}{% endblock %}

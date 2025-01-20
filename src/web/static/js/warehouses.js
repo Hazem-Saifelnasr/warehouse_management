@@ -4,18 +4,25 @@ document.addEventListener("DOMContentLoaded", function () {
         form.onsubmit = async function (event) {
             event.preventDefault();
             const formData = new FormData(this);
+            const jsonData = Object.fromEntries(formData.entries()); // Convert to a plain object
+
+            if (formData.get('capacity') === '') { // Check if budget is an empty string
+                jsonData.capacity = null; // Set to null if empty
+            }
 
             const response = await fetch("/warehouses/add", {
                 method: "POST",
-                body: JSON.stringify(Object.fromEntries(formData)),
                 headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(jsonData),
             });
 
             if (response.ok) {
                 alert("Warehouse added successfully!");
                 window.location.reload();
             } else {
-                alert("Error adding warehouse.");
+                    const error = await response.json();
+                    console.error(`Error: ${response.status} - ${response.statusText}`, error);
+                    alert("Error adding warehouse: " + (error.detail || "Unknown error"));
             }
         };
     }
@@ -34,7 +41,9 @@ function editWarehouse(warehouseId) {
             // Populate the modal form with warehouse data
             const editWarehouseModal = new bootstrap.Modal(document.getElementById("editWarehouseModal"));
             document.getElementById("editWarehouseId").value = warehouse.id;
-            document.getElementById("editWarehouseName").value = warehouse.name;
+            document.getElementById("editName").value = warehouse.name;
+            document.getElementById("editCapacity").value = warehouse.capacity;
+            document.getElementById("editDescription").value = warehouse.description;
             document.getElementById("editLocationId").value = warehouse.location_id;
 
             // Show the modal
@@ -45,7 +54,7 @@ function editWarehouse(warehouseId) {
         });
 }
 
-// Submit the updated user details
+// Submit the updated warehouse details
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("editWarehouseForm");
     if (form) {
@@ -58,6 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
             formData.delete("id")
             const jsonData = Object.fromEntries(formData); // Convert to a plain object
             jsonData.location_id = parseInt(jsonData.location_id); // Ensure location_id is an integer
+            jsonData.capacity = parseFloat(jsonData.capacity); // Ensure location_id is an integer
 
             console.log("Request Data:", JSON.stringify(jsonData)); // Debugging
 
@@ -94,6 +104,20 @@ function deleteWarehouse(warehouseId) {
                     window.location.reload();
                 } else {
                     alert("Error deleting warehouse.");
+                }
+            });
+    }
+}
+
+function archiveWarehouse(warehouseId) {
+    if (confirm("Are you sure you want to archive this warehouse?")) {
+        fetch(`/warehouses/archive/${warehouseId}`, { method: "POST" })
+            .then((response) => {
+                if (response.ok) {
+                    alert("Warehouse archived successfully!");
+                    window.location.reload();
+                } else {
+                    alert("Error archiving warehouse.");
                 }
             });
     }

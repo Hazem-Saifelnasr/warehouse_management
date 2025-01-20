@@ -42,6 +42,8 @@ def dashboard_page(request: Request, db: Session = Depends(get_db)):
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
+        "user_id": request.state.user_id,
+        "user_role": request.state.role
     })
 
 
@@ -49,17 +51,18 @@ def dashboard_page(request: Request, db: Session = Depends(get_db)):
 async def get_dashboard_metrics(request: Request, db: Session = Depends(get_db)):
     if not request.state.user:
         # raise HTTPException(status_code=401, detail="Not authenticated")
-        return templates.TemplateResponse("error.html", {"request": request,"status_code": 401, "message": "Not authenticated"})
+        return templates.TemplateResponse("error.html", {"request": request,"status_code": 401,
+                                                         "message": "Not authenticated"})
 
-    total_items = db.query(Item).count()
-    total_warehouses = db.query(Warehouse).count()
-    total_projects = db.query(Project).count()
+    total_items = db.query(Item).filter(Item.is_active == True).count()
+    total_warehouses = db.query(Warehouse).filter(Warehouse.is_active == True).count()
+    total_projects = db.query(Project).filter(Project.is_active == True).count()
     total_stock = db.query(func.sum(Stock.quantity)).scalar() or 0
 
     # Stock distribution by warehouse/project
     stock_distribution = (
         db.query(
-            func.coalesce(Warehouse.name, Project.project_name).label("entity_name"),
+            func.coalesce(Warehouse.name, Project.name).label("entity_name"),
             func.sum(Stock.quantity).label("total_quantity"),
         )
         .outerjoin(Warehouse, Stock.warehouse_id == Warehouse.id)

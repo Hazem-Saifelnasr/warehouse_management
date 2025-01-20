@@ -1,3 +1,10 @@
+// Float precision
+function floatPrecision(number, floatPrecision) {
+//    const fieldInner = document.getElementById("formattedNumber").innerText
+    fieldInner = number.toFixed(floatPrecision); // Display 123.46
+}
+
+
 function sortTable(tableBodyId, columnIndex) {
     const tableBody = document.getElementById(tableBodyId);
     const rows = Array.from(tableBody.rows);
@@ -53,6 +60,20 @@ function hasPermission(entity, accessType) {
             (perm.entity === entity || perm.entity === "*") &&
             (perm.access_type === accessType || perm.access_type === "*")
     );
+}
+
+// handles the pages navigation
+function changePage(page,size) {
+    // Ensure page is greater than 0
+    if (page < 1) return;
+
+    // Reload the page with the new page number in query params
+    window.location.href = `?page=${page}&size=${size}`;
+}
+
+// handles items per page
+function changePageSize(size) {
+    window.location.href = `?page=1&size=${size}`;
 }
 
 //async function callApi(endpoint, options = {}) {

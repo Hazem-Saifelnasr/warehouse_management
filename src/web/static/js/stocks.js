@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
             delete jsonData.entity_name;
             delete jsonData.item_code;
 
+            console.log(jsonData)
             try {
                 const response = await fetch("/stocks/add", {
                     method: "POST",
@@ -107,37 +108,37 @@ document.addEventListener("DOMContentLoaded", function () {
             const jsonData = Object.fromEntries(formData.entries()); // Convert to a plain object
 
             // Map item_code to item_id
-            const item_id = parseInt(jsonData.item_code);
+            jsonData.item_id = parseInt(jsonData.item_code);
 
             // Convert `from_entity_type` and `from_entity_name` to appropriate IDs
             let from_id, to_id;
             if (jsonData.from_entity_type === "warehouse") {
-                from_id = `from_warehouse_id=${parseInt(jsonData.from_entity_name)}`;
+                jsonData.from_warehouse_id=`${parseInt(jsonData.from_entity_name)}`;
+
             } else if (jsonData.from_entity_type === "project") {
-                from_id = `from_project_id=${parseInt(jsonData.from_entity_name)}`;
+                jsonData.from_project_id=`${parseInt(jsonData.from_entity_name)}`;
             }
 
             // Convert `to_entity_type` and `to_entity_name` to appropriate IDs
             if (jsonData.to_entity_type === "warehouse") {
-                to_id = `to_warehouse_id=${parseInt(jsonData.to_entity_name)}`;
+                jsonData.to_warehouse_id=`${parseInt(jsonData.to_entity_name)}`;
             } else if (jsonData.to_entity_type === "project") {
-                to_id = `to_project_id=${parseInt(jsonData.to_entity_name)}`;
+                jsonData.to_project_id=`${parseInt(jsonData.to_entity_name)}`;
             }
 
-            // Construct query parameters
-            const queryParams = new URLSearchParams({
-                item_id: item_id,
-                quantity: jsonData.quantity,
-            });
+            delete jsonData.from_entity_name;
+            delete jsonData.from_entity_type;
+            delete jsonData.to_entity_name;
+            delete jsonData.to_entity_type;
+            delete jsonData.item_code;
 
-            if (from_id) queryParams.append(...from_id.split("="));
-            if (to_id) queryParams.append(...to_id.split("="));
-
-            console.log("Query Parameters:", queryParams.toString());
+            console.log(jsonData)
 
             try {
-                const response = await fetch(`/stocks/transfer?${queryParams.toString()}`, {
+                const response = await fetch("/stocks/transfer", {
                     method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(jsonData), // Convert the object to JSON string
                 });
 
                 if (response.ok) {
@@ -214,7 +215,7 @@ async function updateEntityList(type) {
     if (entityType === "warehouse") {
         options = warehouses.map(w => `<option value="${w.id}">${w.name}</option>`);
     } else if (entityType === "project") {
-        options = projects.map(p => `<option value="${p.id}">${p.project_name}</option>`);
+        options = projects.map(p => `<option value="${p.id}">${p.name}</option>`);
     }
 
     entityNameSelect.innerHTML = options.join("");

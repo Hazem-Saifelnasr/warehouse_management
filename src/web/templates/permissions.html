@@ -1,60 +1,40 @@
-{% extends "base.html" %}
+{% extends "base_service.html" %}
 
-{% block title %}Permissions{% endblock %}
+{% set service_name = "permissions" %}
+{% set page_name = "permission" %}
+{% set page_name_cap = "Permission" %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3">Permissions</h1>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPermissionModal">Add Permission</button>
-</div>
+{% block title_sub %}Permissions{% endblock %}
 
-<!-- Search Text -->
-<div class="mb-3">
-    <input
-        type="text"
-        id="searchInput"
-        class="form-control"
-        placeholder="Search table..."
-        onkeyup="filterTable('permissionTableBody')"
-    />
-</div>
+{% block document_dashboard %}{% endblock %}
+
+{% block page_heading %}Permissions{% endblock %}
 
 <!-- Permission Table -->
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th onclick="sortTable('permissionTableBody', 0)">User Name<span class="sort-indicator"></span></th>
-            <th onclick="sortTable('permissionTableBody', 1)">Entity Type<span class="sort-indicator"></span></th>
-            <th onclick="sortTable('permissionTableBody', 2)">Entity Name<span class="sort-indicator"></span></th>
-            <th onclick="sortTable('permissionTableBody', 3)">Access Type<span class="sort-indicator"></span></th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody id="permissionTableBody">
+{% block table_header %}
+            <th class="text-start align-top" onclick="sortTable('permissionTableBody', 0)">User Name<span class="sort-indicator"></span></th>
+            <th class="text-start align-top" onclick="sortTable('permissionTableBody', 1)">Entity Type<span class="sort-indicator"></span></th>
+            <th class="text-start align-top" onclick="sortTable('permissionTableBody', 2)">Entity Name<span class="sort-indicator"></span></th>
+            <th class="text-start align-top" onclick="sortTable('permissionTableBody', 3)">Access Type<span class="sort-indicator"></span></th>
+            <th class="text-start align-top">Actions</th>
+{% endblock %}
+
+{% block table_body %}
         {% for permission in permissions %}
         <tr>
-            <td>{{ permission.user_name }}</td> <!-- User name -->
-            <td>{{ permission.entity }}</td>
-            <td>{{ permission.entity_name }}</td> <!-- Entity name -->
-            <td>{{ permission.access_type }}</td>
-            <td>
-                <button class="btn btn-danger btn-sm" onclick="deletePermission({{ permission.id }})">Delete</button>
+            <td class="text-start align-top">{{ permission.user_name }}</td> <!-- User name -->
+            <td class="text-start align-top">{{ permission.entity }}</td>
+            <td class="text-start align-top">{{ permission.entity_name }}</td> <!-- Entity name -->
+            <td class="text-start align-top">{{ permission.access_type }}</td>
+            <td class="text-start align-top">
+                <button class="btn btn-danger btn-sm" onclick="deletePermission({{ permission.id }})"><i class="fa-solid fa-trash"></i></button>
             </td>
         </tr>
         {% endfor %}
-    </tbody>
-</table>
+{% endblock %}
 
 <!-- Add Permission Modal -->
-<div class="modal fade" id="addPermissionModal" tabindex="-1" aria-labelledby="addPermissionModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="addPermissionForm" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addPermissionModalLabel">Add Permission</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
+{% block add_modal_body %}
                     <div class="mb-3">
                         <label for="addUserName" class="form-label">User Name</label>
                         <select class="form-control" id="addUserName" name="user_name" required>
@@ -66,6 +46,7 @@
                         <select class="form-control" id="addEntity" name="entity" required>
                             <option value="*">All</option>
                             <option value="item">Items</option>
+                            <option value="stock">Stocks</option>
                             <option value="project">Projects</option>
                             <option value="warehouse">Warehouses</option>
                             <option value="location">Locations</option>
@@ -81,13 +62,5 @@
                             {% endfor %}
                         </select>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 {% endblock %}
+{% block edit_modal_body %}{% endblock %}

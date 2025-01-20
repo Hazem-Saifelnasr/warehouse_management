@@ -5,23 +5,18 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault();
             // Convert form data into a JSON object
             const formData = new FormData(this); // Gather all form inputs
-
+            const photoFile = formData.get("photo"); // Get the file from the form
+            formData.delete("photo")
             try {
-                // Step 1: Create the Item without the photo
-                const createItemData = {
-                    item_code: formData.get("item_code"),
-                    description: formData.get("description"),
-                    unit_of_measure: formData.get("unit_of_measure"),
-                };
-
                 const createItemResponse = await fetch("/items/add", {
                     method: "POST",
                     headers: {"Content-Type": "application/json",},
-                    body: JSON.stringify(createItemData), // Send item creation data
+                    body: JSON.stringify(Object.fromEntries(formData)), // Send item creation data
                 });
 
                 if (!createItemResponse.ok) {
                     const error = await createItemResponse.json();
+                    console.error(`Error: ${createItemResponse.status} - ${createItemResponse.statusText}`, error);
                     alert("Error creating item: " + (error.detail || "Unknown error"));
                     return;
                 }
@@ -30,7 +25,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 const itemId = createdItem.id; // Retrieve the item_id from the response
 
                 // Step 2: Upload the Photo
-                const photoFile = formData.get("photo"); // Get the file from the form
                 if (photoFile && photoFile.size > 0) {
                     const photoFormData = new FormData();
                     photoFormData.append("file", photoFile);
@@ -47,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 }
 
-                alert("Item added successfully with photo!");
+                alert("Item added successfully!");
                 window.location.reload();
 
             } catch (error) {
@@ -70,18 +64,27 @@ function editItem(itemId) {
             return response.json();
         })
         .then((item) => {
+            console.log(item)
             // Populate the modal form with user data
             const editItemModal = new bootstrap.Modal(document.getElementById("editItemModal"));
             document.getElementById("editItemId").value = item.id;
             document.getElementById("editItemCode").value = item.item_code;
-            document.getElementById("editDescription").value = item.description;
+            document.getElementById("editItemName").value = item.name;
             document.getElementById("editUnitOfMeasure").value = item.unit_of_measure;
+            document.getElementById("editDescription").value = item.description;
+            document.getElementById("editUnifiedCode").value = item.unified_code;
+            document.getElementById("editCategory").value = item.category;
+            document.getElementById("editSubcategory").value = item.subcategory;
+            document.getElementById("editBrand").value = item.brand;
+            document.getElementById("editModel").value = item.model;
+            document.getElementById("editSerialNumber").value = item.serial_number;
+            document.getElementById("editRemarks").value = item.remarks;
 
             // Show the modal
             editItemModal.show();
         })
         .catch((error) => {
-            alert("Error loading item data: " + error.message);
+            alert("Error loading item data: " + error);
         });
 }
 
@@ -131,6 +134,20 @@ function deleteItem(itemId) {
                     window.location.reload();
                 } else {
                     alert("Error deleting item.");
+                }
+            });
+    }
+}
+
+function archiveItem(itemId) {
+    if (confirm("Are you sure you want to archive this item?")) {
+        fetch(`/items/archive/${itemId}`, { method: "POST" })
+            .then((response) => {
+                if (response.ok) {
+                    alert("Item archived successfully!");
+                    window.location.reload();
+                } else {
+                    alert("Error archiving item.");
                 }
             });
     }
@@ -192,3 +209,53 @@ function viewPhoto(itemId) {
             alert("Error viewing photo.");
         });
 }
+
+//function softDeleteItem(itemId) {
+//    if (confirm("Are you sure you want to delete this item?")) {
+//        fetch(`/items/${itemId}/soft-delete`, { method: "DELETE" })
+//            .then(response => {
+//                if (response.ok) {
+//                    alert("Item deleted successfully!");
+//                    window.location.reload();
+//                } else {
+//                    alert("Failed to delete item.");
+//                }
+//            });
+//    }
+//}
+//
+//function archiveItem(itemId) {
+//    fetch(`/items/${itemId}/archive`, { method: "POST" })
+//        .then(response => {
+//            if (response.ok) {
+//                alert("Item archived successfully!");
+//                window.location.reload();
+//            } else {
+//                alert("Failed to archive item.");
+//            }
+//        });
+//}
+//
+//function restoreItem(itemId) {
+//    fetch(`/items/${itemId}/restore`, { method: "POST" })
+//        .then(response => {
+//            if (response.ok) {
+//                alert("Item restored successfully!");
+//                window.location.reload();
+//            } else {
+//                alert("Failed to restore item.");
+//            }
+//        });
+//}
+//
+//function approveItem(itemId) {
+//    fetch(`/items/${itemId}/approve`, { method: "POST" })
+//        .then(response => {
+//            if (response.ok) {
+//                alert("Item approved successfully!");
+//                window.location.reload();
+//            } else {
+//                alert("Failed to approve item.");
+//            }
+//        });
+//}

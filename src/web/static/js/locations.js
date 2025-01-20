@@ -7,8 +7,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const response = await fetch("/locations/add", {
                 method: "POST",
-                body: JSON.stringify(Object.fromEntries(formData)),
                 headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(Object.fromEntries(formData)),
             });
 
             if (response.ok) {
@@ -34,7 +34,7 @@ function editLocation(locationId) {
             // Populate the modal form with user data
             const editLocationModal = new bootstrap.Modal(document.getElementById("editLocationModal"));
             document.getElementById("editLocationId").value = location.id;
-            document.getElementById("editLocationName").value = location.name;
+            document.getElementById("editName").value = location.name;
 
             // Show the modal
             editLocationModal.show();
@@ -56,8 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const formData = new FormData(this); // Gather all form inputs
             formData.delete("id")
             const jsonData = Object.fromEntries(formData); // Convert to a plain object
-            jsonData.location_id = parseInt(jsonData.location_id);
-            console.log(JSON.stringify(jsonData));
+
             try {
                 const response = await fetch(`/locations/${locationId}`, {
                     method: "PUT",
@@ -89,6 +88,20 @@ function deleteLocation(locationId) {
                     window.location.reload();
                 } else {
                     alert("Error deleting location.");
+                }
+            });
+    }
+}
+
+function archiveLocation(locationId) {
+    if (confirm("Are you sure you want to archive this location?")) {
+        fetch(`/locations/archive/${locationId}`, { method: "POST" })
+            .then((response) => {
+                if (response.ok) {
+                    alert("Location archived successfully!");
+                    window.location.reload();
+                } else {
+                    alert("Error archiving location.");
                 }
             });
     }

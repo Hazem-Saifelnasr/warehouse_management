@@ -3,6 +3,14 @@
 {% block title %}Reports{% endblock %}
 
 {% block content %}
+
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link active" href="/reports">Reports</a></li>
+  <li class="nav-item"><a class="nav-link" href="/invoices">Invoices</a></li>
+  <li class="nav-item"><a class="nav-link" href="/stock_permissions">Stock Permissions</a></li>
+</ul>
+
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3">Reports</h1>
     <button class="btn btn-primary" onclick="generateReport()">Generate Reports</button>
@@ -22,7 +30,9 @@
         <!-- Dynamically filled with JavaScript -->
     </tbody>
 </table>
+<div class="border-bottom"></div>
 
+<!-- View Dynamic Reports Table -->
 <div class="mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>View Dynamic Reports</h2>
@@ -76,4 +86,5 @@
         </tbody>
     </table>
 </div>
+{% include 'footer.html' %}
 {% endblock %}

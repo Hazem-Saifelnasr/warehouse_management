@@ -1,111 +1,96 @@
-{% extends "base.html" %}
+{% extends "base_service.html" %}
 
-{% block title %}Warehouses{% endblock %}
+{% set service_name = "warehouses" %}
+{% set page_name = "warehouse" %}
+{% set page_name_cap = "Warehouse" %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3">Warehouses</h1>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWarehouseModal">Add Warehouse</button>
-</div>
+{% block title_sub %}Warehouses{% endblock %}
 
-<!-- Search Text -->
-<div class="mb-3">
-    <input
-        type="text"
-        id="searchInput"
-        class="form-control"
-        placeholder="Search table..."
-        onkeyup="filterTable('warehouseTableBody')"
-    />
-</div>
+{% block document_dashboard %}{% endblock %}
+
+{% block admin_dashboard %}{% endblock %}
+
+{% block page_heading %}Warehouses{% endblock %}
 
 <!-- Warehouse Table -->
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th onclick="sortTable('warehouseTableBody', 0)">Warehouse ID<span class="sort-indicator"></span></th>
-            <th onclick="sortTable('warehouseTableBody', 1)">Name<span class="sort-indicator"></span></th>
-            <th onclick="sortTable('warehouseTableBody', 2)">Location<span class="sort-indicator"></span></th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody id="warehouseTableBody">
-        {% for warehouse in warehouses %}
-        <tr>
-            <td>{{ warehouse.id }}</td>
-            <td>{{ warehouse.name }}</td>
-            <td>{{ warehouse.location.name }}</td>
-            <td>
-                <button class="btn btn-warning btn-sm" onclick="editWarehouse({{ warehouse.id }})">Edit</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteWarehouse({{ warehouse.id }})">Delete</button>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{% block table_header %}
+    <th class="text-start align-top" onclick="sortTable('warehouseTableBody', 0)">Name<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('warehouseTableBody', 1)">Capacity<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('warehouseTableBody', 2)">Location<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('warehouseTableBody', 3)">Description<span class="sort-indicator"></span></th>
+    <th class="text-start align-top">Actions</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for warehouse in warehouses %}
+    <tr>
+        <td class="text-start align-top">{{ warehouse.name }}</td>
+        <td class="text-start align-top">{{ warehouse.capacity if warehouse.capacity else 'N/A' }}</td>
+        <td class="text-start align-top">{{ warehouse.location.name }}</td>
+        <td class="text-start align-top">{{ warehouse.description  if warehouse.description else 'N/A' }}</td>
+        <td>
+            <button class="btn btn-warning btn-sm" onclick="editWarehouse({{ warehouse.id }})"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="deleteWarehouse({{ warehouse.id }})"><i class="fa-solid fa-trash"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="archiveWarehouse({{ warehouse.id }})"><i class="fa-solid fa-box-archive"></i></button>
+        </td>
+    </tr>
+    {% endfor %}
+{% endblock %}
 
 <!-- Add Warehouse Modal -->
-<div class="modal fade" id="addWarehouseModal" tabindex="-1" aria-labelledby="addWarehouseModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="addWarehouseForm" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addWarehouseModalLabel">Add Warehouse</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="warehouseName" class="form-label">Warehouse Name</label>
-                        <input type="text" class="form-control" id="warehouseName" name="name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="locationId" class="form-label">Location</label>
-                        <select class="form-select" id="locationId" name="location_id" required>
-                            {% for location in locations %}
-                            <option value="{{ location.id }}">{{ location.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
+{% block add_modal_body %}
+    <div class="row mb-3 g-3">
+        <div class="col-md-6">
+            <label for="addName" class="form-label">Warehouse Name</label>
+            <input type="text" class="form-control" id="addName" name="name" required>
+        </div>
+        <div class="col-md-6">
+            <label for="addCapacity" class="form-label">Capacity</label>
+            <div class="input-group">
+                <input type="number" class="form-control" id="addCapacity" name="capacity" step="0.01" min="0">
+                <span class="input-group-text">m2</span>
+            </div>
         </div>
     </div>
-</div>
+    <div class="mb-3">
+        <label for="addDescription" class="form-label">Description</label>
+        <textarea class="form-control" id="addDescription" name="description" rows="3"></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="addLocationId" class="form-label">Location</label>
+        <select class="form-select" id="addLocationId" name="location_id" required>
+            {% for location in locations %}
+            <option value="{{ location.id }}">{{ location.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+{% endblock %}
 
 <!-- Edit Warehouses Modal -->
-<div class="modal fade" id="editWarehouseModal" tabindex="-1" aria-labelledby="editWarehouseModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="editWarehouseForm">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editWarehouseModalLabel">Edit Location</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="editWarehouseId" name="id">
-                    <div class="mb-3">
-                        <label for="editWarehouseName" class="form-label">Warehouse Name</label>
-                        <input type="text" class="form-control" id="editWarehouseName" name="name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editLocationId" class="form-label">Location</label>
-                        <select class="form-select" id="editLocationId" name="location_id" required>
-                            {% for location in locations %}
-                            <option value="{{ location.id }}">{{ location.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
-                </div>
-            </form>
+{% block edit_modal_body %}
+    <div class="row mb-3 g-3">
+        <div class="col-md-6">
+            <label for="editName" class="form-label">Warehouse Name</label>
+            <input type="text" class="form-control" id="editName" name="name" required>
+        </div>
+        <div class="col-md-6">
+            <label for="editCapacity" class="form-label">Capacity</label>
+            <div class="input-group">
+                <input type="number" class="form-control" id="editCapacity" name="capacity" step="0.01" min="0">
+                <span class="input-group-text">m2</span>
+            </div>
         </div>
     </div>
-</div>
+    <div class="mb-3">
+        <label for="editDescription" class="form-label">Description</label>
+        <textarea class="form-control" id="editDescription" name="description" rows="3"></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="editLocationId" class="form-label">Location</label>
+        <select class="form-select" id="editLocationId" name="location_id" required>
+            {% for location in locations %}
+            <option value="{{ location.id }}">{{ location.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
 {% endblock %}

@@ -7,6 +7,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const formData = new FormData(this); // Gather all form inputs
             const jsonData = Object.fromEntries(formData.entries()); // Convert to a plain object
 
+            // Convert string 'null' or empty values to actual null for department_id and direct_manager_id
+            if (jsonData.department_id === "null" || jsonData.department_id.trim() === "") {
+                jsonData.department_id = null;
+            }
+
+            if (jsonData.direct_manager_id === "null" || jsonData.direct_manager_id.trim() === "") {
+                jsonData.direct_manager_id = null;
+            }
+
             try {
                 const response = await fetch("/users/add", {
                     method: "POST",
@@ -19,6 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     window.location.reload();
                 } else {
                     const error = await response.json();
+                    console.error(`Error: ${response.status} - ${response.statusText}`, error);
                     alert("Error adding user: " + (error.detail || "Unknown error"));
                 }
             } catch (error) {
@@ -47,6 +57,9 @@ function editUser(userId) {
             document.getElementById("editEmployeeId").value = user.employee_id;
             document.getElementById("editUsername").value = user.username;
             document.getElementById("editEmail").value = user.email;
+            document.getElementById("editPosition").value = user.position;
+            document.getElementById("editDepartmentId").value = user.department_id;
+            document.getElementById("editDirectManagerId").value = user.direct_manager_id;
             document.getElementById("editRole").value = user.role;
 
             // Show the modal
@@ -69,6 +82,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const formData = new FormData(this); // Gather all form inputs
             formData.delete("id")
             const jsonData = Object.fromEntries(formData); // Convert to a plain object
+
+            // Convert string 'null' or empty values to actual null for department_id and direct_manager_id
+            if (jsonData.department_id === "null" || jsonData.department_id.trim() === "") {
+                jsonData.department_id = null;
+            }
+
+            if (jsonData.direct_manager_id === "null" || jsonData.direct_manager_id.trim() === "") {
+                jsonData.direct_manager_id = null;
+            }
 
             try {
                 const response = await fetch(`/users/${userId}`, {
@@ -102,6 +124,20 @@ function deleteUser(userId) {
                     window.location.reload();
                 } else {
                     alert("Error deleting user.");
+                }
+            });
+    }
+}
+
+function archiveUser(userId) {
+    if (confirm("Are you sure you want to archive this user?")) {
+        fetch(`/users/archive/${userId}`, { method: "POST" })
+            .then((response) => {
+                if (response.ok) {
+                    alert("User archived successfully!");
+                    window.location.reload();
+                } else {
+                    alert("Error archiving user.");
                 }
             });
     }

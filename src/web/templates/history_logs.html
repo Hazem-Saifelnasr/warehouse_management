@@ -1,0 +1,47 @@
+{% extends "base_service.html" %}
+
+{% set service_name = "historyLogs" %}
+{% set page_name = "historyLog" %}
+{% set page_name_cap = "History Log" %}
+
+{% block title_sub %}History Logs{% endblock %}
+
+{% block document_dashboard %}{% endblock %}
+
+{% block add_button %}{% endblock %}
+
+{% block page_heading %}History Logs{% endblock %}
+
+<!-- History Log Table -->
+{% block table_header %}
+    <th class="text-start align-top" onclick="sortTable('historyLogTableBody', 0)">ID<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('historyLogTableBody', 1)">Entity Name<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('historyLogTableBody', 2)">Entity ID<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('historyLogTableBody', 3)">Action<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('historyLogTableBody', 4)">Requested By<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('historyLogTableBody', 5)">Request Date<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('historyLogTableBody', 6)">Details<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('historyLogTableBody', 7)">Approved By<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('historyLogTableBody', 8)">Approval Date<span class="sort-indicator"></span></th>
+    <th class="text-start align-top" onclick="sortTable('historyLogTableBody', 8)">Meta Data<span class="sort-indicator"></span></th>
+{% endblock %}
+
+{% block table_body %}
+    {% for log in history_logs %}
+    <tr>
+        <td class="text-start align-top">{{ log.id }}</td>
+        <td class="text-start align-top">{{ log.entity }}</td>
+        <td class="text-start align-top">{{ log.entity_display_name or 'N/A' }}</td>
+        <td class="text-start align-top">{{ log.action }}</td>
+        <td class="text-start align-top">{{ log.requester_name }}</td>
+        <td class="text-start align-top">{{ log.request_at }}</td>
+        <td class="text-start align-top">{{ log.details }}</td>
+        <td class="text-start align-top">{{ log.approver_name or 'N/A' }}</td>
+        <td class="text-start align-top">{{ log.approval_at or 'N/A' }}</td>
+        <td class="text-start align-top">{{ log.entity_metadata}}</td>
+    </tr>
+    {% endfor %}
+{% endblock %}
+
+{% block add_modal_body %}{% endblock %}
+{% block edit_modal_body %}{% endblock %}

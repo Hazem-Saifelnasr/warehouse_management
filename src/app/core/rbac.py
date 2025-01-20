@@ -187,7 +187,9 @@ def has_permission(db: Session, user_id: int, entity: str, entity_id: str, acces
     for permission in permissions:
         # Check if permission matches exactly or with wildcards
         if (
-                (permission.entity in {entity, "*"} and entity not in ["permissions", "users"]) and
+                (permission.entity in {entity, "*"} and entity not in ["users", "departments", "permissions",
+                                                                       "pending_approvals", "history_logs",
+                                                                       "restore"]) and
                 permission.entity_id in {str(entity_id), "*"} and
                 (
                     permission.access_type == "*" or
@@ -197,4 +199,11 @@ def has_permission(db: Session, user_id: int, entity: str, entity_id: str, acces
             return True
 
     # Raise exception if no matching permission found
+    return False
+
+
+def has_approval_privileges(db: Session, user_id: int):
+    user = db.query(User).filter(User.id == user_id).first()
+    if user.is_superuser or user.role == "admin" or user.direct_manager_id is None:
+        return True
     return False

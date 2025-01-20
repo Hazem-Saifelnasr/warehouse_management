@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from src.app.core.database import get_db
 from src.app.core.rbac import rbac_check
 from src.app.services.report_service import ReportService
-
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 
@@ -16,7 +15,11 @@ templates = Jinja2Templates(directory="src/web/templates")
 @router.get("/", response_class=HTMLResponse)
 @rbac_check(entity="reports", access_type="read")  # Highlight: Added decorator
 def reports_page(request: Request, db: Session = Depends(get_db)):
-    return templates.TemplateResponse("reports.html", {"request": request})
+    return templates.TemplateResponse("reports.html", {
+        "request": request,
+        "user_id": request.state.user_id,
+        "user_role": request.state.role
+    })
 
 
 @router.get("/list")
@@ -34,7 +37,7 @@ def generate_report(request: Request, db: Session = Depends(get_db)):
 @router.get("/{entity_type}")
 @rbac_check(entity="reports", access_type="read")  # Highlight: Added decorator
 def entity_report(request: Request, entity_type: str, db: Session = Depends(get_db)):
-    return ReportService.entity_report(entity_type, db)
+    return ReportService.entity_report(entity_type, request.state.user_id, db)
 
 
 @router.get("/stock/item/{item_id}")

@@ -26,8 +26,8 @@ async function fetchReports() {
                                 <td>${report.name}</td>
                                 <td>${new Date(report.generated_at).toLocaleString()}</td>
                                 <td>
-                                    <button class="btn btn-danger btn-sm" onclick="deleteReport('${ report.file_name }')">Delete</button>
-                                    <a href="files/${report.file_name}" class="btn btn-success btn-sm" target="_blank">Download</a>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteReport('${ report.file_name }')"><i class="fa-solid fa-trash"></i></button>
+                                    <a href="files/${report.file_name}" class="btn btn-success btn-sm" target="_blank"><i class="fa-solid fa-download"></i></a>
                                 </td>
                             </tr>
                         `).join("");
@@ -196,33 +196,6 @@ document.addEventListener("DOMContentLoaded", () => {
         entityIdSelector.innerHTML = options.join("");
         entityIdSelection.style.display = options.length > 0 ? "block" : "none";
     });
-
-//    // Generate report
-//    exportReportButton.addEventListener("click", () => {
-//        const reportType = reportTypeSelector.value;
-//        const entityType = entityTypeSelector.value;
-//        const entityId = entityIdSelector.value;
-//        const itemId = itemIdSelector.value;
-//
-//        let url = "";
-//        if (reportType === "entity_report") {
-//            url = `/reports/${entityType}`;
-//        } else if (reportType === "stock_by_entity_type_report") {
-//            url = `/reports/stock/${entityType}`;
-//        } else if (reportType === "stock_by_entity_type_and_id_report") {
-//            url = `/reports/stock/${entityType}/${entityId}`;
-//        } else if (reportType === "stock_by_item_report") {
-//            url = `/reports/stock/item/${itemId}`;
-//        }
-//
-//        if (url) {
-//            fetch(url, {method: "GET",});
-////            window.open(url, "_blank");
-//            window.location.reload();
-//        } else {
-//            alert("Invalid report selection!");
-//        }
-//    });
 });
 
 document.addEventListener("DOMContentLoaded", () => {

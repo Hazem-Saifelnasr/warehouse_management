@@ -1,0 +1,47 @@
+{% extends "base_service.html" %}
+
+{% set service_name = "departments" %}
+{% set page_name = "department" %}
+{% set page_name_cap = "Department" %}
+
+{% block title_sub %}Departments{% endblock %}
+
+{% block document_dashboard %}{% endblock %}
+
+{% block page_heading %}Departments{% endblock %}
+
+<!-- Department Table -->
+{% block table_header %}
+            <th class="text-start align-top" onclick="sortTable('departmentTableBody', 0)">Name<span class="sort-indicator"></span></th>
+            <th class="text-start align-top">Actions</th>
+{% endblock %}
+
+{% block table_body %}
+        {% for department in departments %}
+        <tr>
+            <td class="text-start align-top">{{ department.name }}</td>
+            <td>
+                <button class="btn btn-warning btn-sm" onclick="editDepartment({{ department.id }})"><i class="fa-solid fa-pen-to-square"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteDepartment({{ department.id }})"><i class="fa-solid fa-trash"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="archiveDepartment({{ department.id }})"><i class="fa-solid fa-box-archive"></i></button>
+            </td>
+        </tr>
+        {% endfor %}
+{% endblock %}
+
+<!-- Add Department Modal -->
+{% block add_modal_body %}
+    <div class="mb-3">
+        <label for="addName" class="form-label">Department Name</label>
+        <input type="text" class="form-control" id="addName" name="name" required>
+    </div>
+{% endblock %}
+
+<!-- Edit Department Modal -->
+{% block edit_modal_body %}
+    <div class="mb-3">
+        <label for="editName" class="form-label">Name</label>
+        <input type="text" class="form-control" id="editName" name="name" required>
+    </div>
+{% endblock %}
+

@@ -1,0 +1,72 @@
+{% extends "base_service.html" %}
+
+{% set service_name = "restores" %}
+{% set page_name = "restore" %}
+{% set page_name_cap = "Restore" %}
+
+{% block title_sub %}Restores{% endblock %}
+
+{% block document_dashboard %}{% endblock %}
+
+{% block page_heading %}Restores{% endblock %}
+
+{% block add_button %}{% endblock %}
+
+{% block restore %}
+<form method="get" action="/restore">
+    <div class="row mb-3 g-3">
+        <div class="col-md-1">
+            <label for="entity_type" class="form-label">Entity Type:</label>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" name="entity_type" id="entity_type">
+                <option value="">All</option>
+                <option value="department">Department</option>
+                <option value="item">Item</option>
+                <option value="project">Project</option>
+                <option value="warehouse">Warehouse</option>
+                <option value="location">Location</option>
+                <option value="user">User</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <label for="status" class="form-label">Status:</label>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" name="status" id="status">
+                <option value="all">All</option>
+                <option value="archived">Archived</option>
+                <option value="deleted">Deleted</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button class="btn btn-primary btn-sm" type="submit">Filter</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block table_header %}
+    <th class="text-start align-top" onclick="sortTable('restoreTableBody', 0)">Entity</th>
+    <th class="text-start align-top" onclick="sortTable('restoreTableBody', 0)">Name</th>
+    <th class="text-start align-top" onclick="sortTable('restoreTableBody', 1)">Status</th>
+    <th class="text-start align-top" onclick="sortTable('restoreTableBody', 2)">Date</th>
+    <th class="text-start align-top">Action</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for entity in entities %}
+    <tr>
+        <td class="text-start align-top">{{ entity.entity_type }}</td>
+        <td class="text-start align-top">{{ entity.name }}</td>
+        <td class="text-start align-top">{{ entity.status }}</td>
+        <td class="text-start align-top">{{ entity.archived_at if entity.status == 'archived' else entity.deleted_at}}</td>
+        <td>
+            <button class="btn btn-success btn-sm" onclick="restoreEntity('{{ entity.entity_type }}', {{ entity.id }})"><i class="fa-solid fa-trash-can-arrow-up"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="deleteEntity('{{ entity.entity_type }}', {{ entity.id }})"><i class="fa-solid fa-trash"></i></button>
+        </td>
+    </tr>
+    {% endfor %}
+{% endblock %}
+
+

@@ -1,117 +1,190 @@
-{% extends "base.html" %}
+{% extends "base_service.html" %}
 
-{% block title %}Items{% endblock %}
+{% set service_name = "items" %}
+{% set page_name = "item" %}
+{% set page_name_cap = "Item" %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3">Items</h1>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">Add Item</button>
-</div>
+{% block title_sub %}Items{% endblock %}
 
-<!-- Search Text -->
-<div class="mb-3">
-    <input
-        type="text"
-        id="searchInput"
-        class="form-control"
-        placeholder="Search table..."
-        onkeyup="filterTable('itemTableBody')"
-    />
-</div>
+{% block document_dashboard %}{% endblock %}
 
-<!-- Item Table -->
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th onclick="sortTable('itemTableBody', 0)">Item Code<span class="sort-indicator"></span></th>
-            <th onclick="sortTable('itemTableBody', 1)">Description<span class="sort-indicator"></span></th>
-            <th onclick="sortTable('itemTableBody', 2)">Unit of Measure<span class="sort-indicator"></span></th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody  id="itemTableBody">
-        {% for item in items %}
-        <tr>
-            <td>{{ item.item_code }}</td>
-            <td>{{ item.description }}</td>
-            <td>{{ item.unit_of_measure }}</td>
-            <td>
-                <button class="btn btn-warning btn-sm" onclick="editItem({{ item.id }})">Edit</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteItem({{ item.id }})">Delete</button>
-                <button class="btn btn-primary btn-sm" onclick="uploadPhoto({{ item.id }})">Upload Photo</button>
-                <button class="btn btn-primary btn-sm" onclick="viewPhoto({{ item.id }})">View Photo</button>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{% block admin_dashboard %}{% endblock %}
+
+{% block page_heading %}Items{% endblock %}
+
+{% block table_header %}
+<th class="text-start align-top" onclick="sortTable('itemTableBody', 0)">Code<span class="sort-indicator"></span></th>
+<th class="text-start align-top" onclick="sortTable('itemTableBody', 1)">Item Name<span class="sort-indicator"></span></th>
+<th class="text-start align-top" onclick="sortTable('itemTableBody', 2)">Unified Code<span class="sort-indicator"></span></th>
+<th class="text-start align-top" onclick="sortTable('itemTableBody', 4)">Description<span class="sort-indicator"></span></th>
+<th class="text-start align-top" onclick="sortTable('itemTableBody', 5)">Unit<span class="sort-indicator"></span></th>
+<th class="text-start align-top" onclick="sortTable('itemTableBody', 6)">Category<span class="sort-indicator"></span></th>
+<th class="text-start align-top" onclick="sortTable('itemTableBody', 7)">Subcategory<span class="sort-indicator"></span></th>
+<th class="text-start align-top" onclick="sortTable('itemTableBody', 8)">Brand<span class="sort-indicator"></span></th>
+<th class="text-start align-top" onclick="sortTable('itemTableBody', 9)">Model<span class="sort-indicator"></span></th>
+<th class="text-start align-top" onclick="sortTable('itemTableBody', 10)">S/N<span class="sort-indicator"></span></th>
+<th class="text-start align-top" onclick="sortTable('itemTableBody', 11)">Remarks<span class="sort-indicator"></span></th>
+<th class="text-start align-top">Actions</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for item in items %}
+    <tr>
+        <td class="text-start align-top">{{ item.item_code }}</td>
+        <td class="text-start align-top">{{ item.name }}</td>
+        <td class="text-start align-top">{{ item.unified_code }}</td>
+        <td class="text-start align-top">{{ item.description }}</td>
+        <td class="text-start align-top">{{ item.unit_of_measure }}</td>
+        <td class="text-start align-top">{{ item.category }}</td>
+        <td class="text-start align-top">{{ item.subcategory }}</td>
+        <td class="text-start align-top">{{ item.brand }}</td>
+        <td class="text-start align-top">{{ item.model }}</td>
+        <td class="text-start align-top">{{ item.serial_number }}</td>
+        <td class="text-start align-top">{{ item.remarks }}</td>
+        <td>
+            <button class="btn btn-warning btn-sm" onclick="editItem({{ item.id }})"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="deleteItem({{ item.id }})"><i class="fa-solid fa-trash"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="archiveItem({{ item.id }})"><i class="fa-solid fa-box-archive"></i></button>
+            <button class="btn btn-primary btn-sm" onclick="uploadPhoto({{ item.id }})"><i class="fa-solid fa-upload"></i></button>
+            <button class="btn btn-primary btn-sm" onclick="viewPhoto({{ item.id }})"><i class="fa-solid fa-image"></i></button>
+        </td>
+    </tr>
+    {% endfor %}
+{% endblock %}
+
 
 <!-- Add Item Modal -->
-<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="addItemForm" method="POST" enctype="multipart/form-data">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addItemModalLabel">Add Item</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="itemCode" class="form-label">Item Code</label>
-                        <input type="text" class="form-control" id="itemCode" name="item_code" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="unitOfMeasure" class="form-label">Unit of Measure</label>
-                        <input type="text" class="form-control" id="unitOfMeasure" name="unit_of_measure" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="photo" class="form-label">Photo</label>
-                        <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
+{% block add_modal_body %}
+    <div class="row mb-3 g-3">
+        <div class="col-md-4">
+            <label for="addItemCode" class="form-label">Item Code</label>
+            <input type="text" class="form-control" id="addItemCode" name="item_code" required>
+        </div>
+        <div class="col-md-4">
+            <label for="addItemName" class="form-label">Item Name</label>
+            <input type="text" class="form-control" id="addItemName" name="name" required>
+        </div>
+        <div class="col-md-4">
+            <label for="addUnitOfMeasure" class="form-label">Unit of Measure</label>
+            <input type="text" class="form-control" id="addUnitOfMeasure" name="unit_of_measure" required>
         </div>
     </div>
-</div>
+    <div class="mb-3">
+        <label for="addDescription" class="form-label">Description</label>
+        <textarea class="form-control" id="addDescription" name="description" rows="3"></textarea>
+    </div>
+    <hr class="my-1">
+    <div class="row mb-3 g-3">
+        <div class="col-md-6">
+            <label for="addUnifiedCode" class="form-label">Unified Code</label>
+            <input type="text" class="form-control" id="addUnifiedCode" name="unified_code">
+        </div>
+    </div>
+    <div class="row mb-3 g-3">
+        <div class="col-md-6">
+            <label for="addCategory" class="form-label">Category</label>
+                <select class="form-select" id="addCategory" name="category" required>
+                    <option value="architecture">Architecture</option>
+                    <option value="civil">Civil</option>
+                    <option value="mechanical">Mechanical</option>
+                    <option value="electrical">Electrical</option>
+                    <option value="low_current">Low Current</option>
+                    <option value="miscellanea">Miscellanea</option>
+                    <option value="None_project">None Project</option>
+                </select>
+        </div>
+        <div class="col-md-6">
+            <label for="addSubcategory" class="form-label">Sub Category</label>
+            <input type="text" class="form-control" id="addSubcategory" name="subcategory">
+        </div>
+    </div>
+    <div class="row mb-3 g-3">
+        <div class="col-md-4">
+            <label for="addBrand" class="form-label">Brand</label>
+            <input type="text" class="form-control" id="addBrand" name="brand">
+        </div>
+        <div class="col-md-4">
+            <label for="addModel" class="form-label">Model</label>
+            <input type="text" class="form-control" id="addModel" name="model">
+        </div>
+        <div class="col-md-4">
+            <label for="addSerialNumber" class="form-label">Serial Number</label>
+            <input type="text" class="form-control" id="addSerialNumber" name="serial_number">
+        </div>
+    </div>
+    <hr class="my-1">
+    <div class="mb-3">
+        <label for="addRemarks" class="form-label">Remarks</label>
+        <textarea class="form-control" id="addRemarks" name="remarks" rows="3"></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="addPhoto" class="form-label">Photo</label>
+        <input type="file" class="form-control" id="addPhoto" name="photo" accept="image/*">
+    </div>
+{% endblock %}
 
 <!-- Edit Item Modal -->
-<div class="modal fade" id="editItemModal" tabindex="-1" aria-labelledby="editItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="editItemForm" enctype="multipart/form-data">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editItemModalLabel">Edit Item</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="editItemId" name="id">
-                    <div class="mb-3">
-                        <label for="editItemCode" class="form-label">Item Code</label>
-                        <input type="text" class="form-control" id="editItemCode" name="item_code" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editDescription" class="form-label">Description</label>
-                        <textarea class="form-control" id="editDescription" name="description" rows="3" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editUnitOfMeasure" class="form-label">Unit of Measure</label>
-                        <input type="text" class="form-control" id="editUnitOfMeasure" name="unit_of_measure" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
-                </div>
-            </form>
+{% block edit_modal_body %}
+    <div class="row mb-3 g-3">
+        <div class="col-md-4">
+            <label for="editItemCode" class="form-label">Item Code</label>
+            <input type="text" class="form-control" id="editItemCode" name="item_code" required>
+        </div>
+        <div class="col-md-4">
+            <label for="editItemName" class="form-label">Item Name</label>
+            <input type="text" class="form-control" id="editItemName" name="item_name" required>
+        </div>
+        <div class="col-md-4">
+            <label for="editUnitOfMeasure" class="form-label">Unit of Measure</label>
+            <input type="text" class="form-control" id="editUnitOfMeasure" name="unit_of_measure" required>
         </div>
     </div>
-</div>
+    <div class="mb-3">
+        <label for="editDescription" class="form-label">Description</label>
+        <textarea class="form-control" id="editDescription" name="description" rows="3"></textarea>
+    </div>
+    <hr class="my-1">
+    <div class="row mb-3 g-3">
+        <div class="col-md-6">
+            <label for="editUnifiedCode" class="form-label">Unified Code</label>
+            <input type="text" class="form-control" id="editUnifiedCode" name="unified_code">
+        </div>
+    </div>
+    <div class="row mb-3 g-3">
+        <div class="col-md-6">
+            <label for="editCategory" class="form-label">Category</label>
+                <select class="form-select" id="editCategory" name="category" required>
+                    <option value="architecture">Architecture</option>
+                    <option value="civil">Civil</option>
+                    <option value="mechanical">Mechanical</option>
+                    <option value="electrical">Electrical</option>
+                    <option value="low_current">Low Current</option>
+                    <option value="miscellanea">Miscellanea</option>
+                    <option value="None_project">None Project</option>
+                </select>
+        </div>
+        <div class="col-md-6">
+            <label for="editSubcategory" class="form-label">Sub Category</label>
+            <input type="text" class="form-control" id="editSubcategory" name="subcategory">
+        </div>
+    </div>
+    <div class="row mb-3 g-3">
+        <div class="col-md-4">
+            <label for="editBrand" class="form-label">Brand</label>
+            <input type="text" class="form-control" id="editBrand" name="brand">
+        </div>
+        <div class="col-md-4">
+            <label for="editModel" class="form-label">Model</label>
+            <input type="text" class="form-control" id="editModel" name="model">
+        </div>
+        <div class="col-md-4">
+            <label for="editSerialNumber" class="form-label">Serial Number</label>
+            <input type="text" class="form-control" id="editSerialNumber" name="serial_number">
+        </div>
+    </div>
+    <hr class="my-1">
+    <div class="mb-3">
+        <label for="editRemarks" class="form-label">Remarks</label>
+        <textarea class="form-control" id="editRemarks" name="remarks" rows="3"></textarea>
+    </div>
 {% endblock %}

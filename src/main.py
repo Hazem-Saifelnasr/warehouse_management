@@ -4,7 +4,8 @@ import uvicorn
 from fastapi import FastAPI, Request, APIRouter
 from fastapi.staticfiles import StaticFiles
 from src.app.core.database import Base, engine
-from src.app.routers import base, users, items, stocks, locations, warehouses, projects, permissions, reports
+from src.app.routers import (base, users, items, stocks, locations, warehouses, projects, permissions, reports,
+                             departments, invoices, pending_approvals, history_logs, stock_permissions, restore)
 from src.app.core.config import get_settings
 from src.app.core.rbac import rbac_check
 from starlette.responses import RedirectResponse
@@ -35,6 +36,7 @@ settings = get_settings()
 # Include Routers
 app.include_router(base.router, tags=["Health"])
 app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(departments.router, prefix="/departments", tags=["departments"])
 app.include_router(items.router, prefix="/items", tags=["Items"])
 app.include_router(stocks.router, prefix="/stocks", tags=["Stocks"])
 app.include_router(locations.router, prefix="/locations", tags=["Locations"])
@@ -42,6 +44,11 @@ app.include_router(warehouses.router, prefix="/warehouses", tags=["Warehouses"])
 app.include_router(projects.router, prefix="/projects", tags=["Projects"])
 app.include_router(permissions.router, prefix="/permissions", tags=["Permissions"])
 app.include_router(reports.router, prefix="/reports", tags=["reports"])
+app.include_router(invoices.router, prefix="/invoices", tags=["invoices"])
+app.include_router(pending_approvals.router, prefix="/pending_approvals", tags=["pending_approvals"])
+app.include_router(history_logs.router, prefix="/history_logs", tags=["history_logs"])
+app.include_router(stock_permissions.router, prefix="/stock_permissions", tags=["stock_permissions"])
+app.include_router(restore.router, prefix="/restore", tags=["restores"])
 
 # Mount Static Files
 app.mount("/static", StaticFiles(directory="src/web/static"), name="static")

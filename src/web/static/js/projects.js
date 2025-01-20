@@ -4,18 +4,25 @@ document.addEventListener("DOMContentLoaded", function () {
         form.onsubmit = async function (event) {
             event.preventDefault();
             const formData = new FormData(this);
+            const jsonData = Object.fromEntries(formData.entries()); // Convert to a plain object
+
+            if (formData.get('budget') === '') { // Check if budget is an empty string
+                jsonData.budget = null; // Set to null if empty
+            }
 
             const response = await fetch("/projects/add", {
                 method: "POST",
-                body: JSON.stringify(Object.fromEntries(formData)),
                 headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(jsonData), // Convert the object to JSON string
             });
 
             if (response.ok) {
                 alert("Project added successfully!");
                 window.location.reload();
             } else {
-                alert("Error adding project.");
+                    const error = await response.json();
+                    console.error(`Error: ${response.status} - ${response.statusText}`, error);
+                    alert("Error adding project: " + (error.detail || "Unknown error"));
             }
         };
     }
@@ -34,7 +41,9 @@ function editProject(projectId) {
             // Populate the modal form with project data
             const editProjectModal = new bootstrap.Modal(document.getElementById("editProjectModal"));
             document.getElementById("editProjectId").value = project.id;
-            document.getElementById("editProjectName").value = project.project_name;
+            document.getElementById("editName").value = project.name;
+            document.getElementById("editBudget").value = project.budget;
+            document.getElementById("editDescription").value = project.description;
             document.getElementById("editLocationId").value = project.location_id;
 
             // Show the modal
@@ -58,6 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
             formData.delete("id")
             const jsonData = Object.fromEntries(formData); // Convert to a plain object
             jsonData.location_id = parseInt(jsonData.location_id); // Ensure location_id is an integer
+            jsonData.budget = parseFloat(jsonData.budget); // Ensure location_id is an integer
 
             console.log("Request Data:", JSON.stringify(jsonData)); // Debugging
 
@@ -94,6 +104,20 @@ function deleteProject(projectId) {
                     window.location.reload();
                 } else {
                     alert("Error deleting project.");
+                }
+            });
+    }
+}
+
+function archiveProject(projectId) {
+    if (confirm("Are you sure you want to archive this project?")) {
+        fetch(`/projects/archive/${projectId}`, { method: "POST" })
+            .then((response) => {
+                if (response.ok) {
+                    alert("Project archived successfully!");
+                    window.location.reload();
+                } else {
+                    alert("Error archiving project.");
                 }
             });
     }
